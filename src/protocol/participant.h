@@ -1,0 +1,5 @@
+#ifndef PROTO_PARTICIPANT
+#define PROTO_PARTICIPANT
+
+
+#endif
