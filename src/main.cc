@@ -2,31 +2,57 @@
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
+#include <stdexcept>
+
+
+#include <sss.h>
 
 
 #include <crypto/crypto_primitives.h>
+#include <protocol/keyholder.h>
+
+
+// Toy example macros, leave when done
+#define NUM_SHARES 5
+#define THRESHOLD 3
 
 int main(int argc, char *argv[]){
 
     // Toy example: are our primitives imported properly
 
-    // uint8_t priv[32];
-    // uint8_t pub[32];
+    uint8_t priv[32];
+    uint8_t pub[32];
 
-    // CryptoPrimitives::x25519_keypair(priv,pub);
 
-    // std::cout << "Priv: " << std::endl;
-    // for (const auto& e : priv) {
-    //     std::cout << std::hex << +e;
-    // }
+    sss_Share ourShares[NUM_SHARES];
+    const char secret[sss_MLEN] = "wow this works";
+    char reconstruct[sss_MLEN];
 
-    // std::cout << "\nPub: " << std::endl;
-    // for (const auto& e : pub) {
-    //     std::cout << std::hex << +e;
-    // }
+    // Curve 25519 tests
+
+    CryptoPrimitives::x25519_keypair(priv,pub);
+
+    std::cout << "Priv: " << std::endl;
+    for (const auto& e : priv) {
+        std::cout << std::hex << +e;
+    }
+
+    std::cout << "\nPub: " << std::endl;
+    for (const auto& e : pub) {
+        std::cout << std::hex << +e;
+    }
+
+    // SSS tests
+    // Construct N shares at threshold T
+    CryptoPrimitives::sss_share_gen(*ourShares, sizeof(ourShares), (uint8_t*) secret, (const uint8_t) NUM_SHARES, (const uint8_t) THRESHOLD); 
+    // Reconstruct from shares 3-5. Obviously the shares size is wrong now, but the primitive doesn't use it.
+    CryptoPrimitives::sss_share_reconstruct((uint8_t*) reconstruct, sizeof(reconstruct), ourShares[2], sizeof(ourShares), (const uint8_t) THRESHOLD);
+
+    std::cout << "\nSSS test....\nReconstructed:" << reconstruct << std::endl;
+
 
     // TODO Protocol flow.
-    
+    try { 
     /*
     Objectives: 
     - Offer high-level overview and metrics on total map coverage
@@ -51,6 +77,8 @@ int main(int argc, char *argv[]){
     After initial dispatch phase is over, KH may destroy all data, including polynomials.
 
     */
+    
+    KeyHolder kh(1000,10,100,3);
 
     /*
     PHASE 2: Exploration and reconstruction
@@ -81,6 +109,10 @@ int main(int argc, char *argv[]){
     - Based on current location, select likely candidates to explore during next round. This can be local exploration, or any other strategy.
     - This strategy is developed independently by each member.
     */
+    } catch (const std::exception& e) {
+        std::cerr << "Main test failed: " << e.what() << std::endl;
+        return 1;
+    }
 
     return 0;
 }

@@ -13,6 +13,8 @@ add_compile_options(
 
 add_subdirectory(vendor/boringssl)
 
+add_subdirectory(vendor/sss)
+
 add_library(maincrypto
     src/crypto/crypto_primitives.cc
     src/protocol/participant.cc
@@ -23,12 +25,14 @@ target_include_directories(maincrypto
     PUBLIC
         src
         vendor/boringssl/include
+        vendor/sss
 )
 
 target_link_libraries(maincrypto
     PRIVATE
         crypto
         ssl
+        sss
 )
 
 add_executable(app src/main.cc)

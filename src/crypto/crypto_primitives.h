@@ -12,11 +12,15 @@ public:
     static void hkdf_sha256(uint8_t *out, size_t out_len, const uint8_t *ikm, size_t ikm_len,
                             const uint8_t *salt, size_t salt_len, const uint8_t *info, size_t info_len);
 
-    static bool aes_gcm_encrypt(uint8_t *out, size_t *out_len, const uint8_t *plaintext, size_t plaintext_len,
+    static bool aes_gcm_encrypt(uint8_t *out, size_t out_len, const uint8_t *plaintext, size_t plaintext_len,
                                  const uint8_t *aad, size_t aad_len, const uint8_t *key, const uint8_t *nonce);
 
-    static bool aes_gcm_decrypt(uint8_t *out, size_t *out_len, const uint8_t *ciphertext, size_t ciphertext_len,
+    static bool aes_gcm_decrypt(uint8_t *out, size_t out_len, const uint8_t *ciphertext, size_t ciphertext_len,
                                  const uint8_t *aad, size_t aad_len, const uint8_t *key, const uint8_t *nonce);
+
+    static bool sss_share_gen(uint8_t *out, size_t out_len, uint8_t *data, const uint8_t num_shares, const uint8_t threshold);
+
+    static bool sss_share_reconstruct(uint8_t *out, size_t out_len, uint8_t *in, size_t in_len, const uint8_t num_shares);
 };
 
 #endif
