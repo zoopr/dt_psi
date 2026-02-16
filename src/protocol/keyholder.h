@@ -4,28 +4,37 @@
 #include <cstddef>
 #include <cstdint>
 #include <vector>
+#include <array>
 
 extern "C" {
     #include <sss.h>
 }
 
-#define KG_LEN 64
-#define REC_KEY_LEN 64
+#include "crypto/crypto_types.h"
+
+#define KG_LEN 32
+#define REC_KEY_LEN 32
+#define SALT_LEN 32
 
 
 class KeyHolder {
 private:
-    std::vector<sss_Share> polymatrix;
+    uint64_t max_coords;
+    uint8_t max_parties, max_rounds, threshold;
+
+    std::vector<cpp_share> polymatrix;
     bool isInitialized = false;
     uint8_t kg[KG_LEN];
-    uint8_t r_priv[REC_KEY_LEN], r_pub[REC_KEY_LEN];    
+    uint8_t r_priv[REC_KEY_LEN], r_pub[REC_KEY_LEN];
+    uint8_t common_salt[SALT_LEN] = {0,}; 
+    uint8_t last_served;
 
 public:
     KeyHolder(const uint64_t coords, const uint8_t max_parties, const uint8_t max_rounds, const uint8_t threshold);
 
-    bool serve_participant();
+    bool serve_participant(participant_proto_data_t* in);
 
-    bool serve_reconstructor();
+    bool serve_reconstructor(reconstructor_proto_data_t* in);
 };
 
 #endif

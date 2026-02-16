@@ -1,9 +1,13 @@
 #include "crypto_primitives.h"
+
+#include <stdexcept>
+
 #include <openssl/aead.h>
 #include <openssl/curve25519.h>
 #include <openssl/hkdf.h>
 #include <openssl/rand.h>
 #include <openssl/evp.h>
+#include <openssl/hmac.h>
 
 
 extern "C" {
@@ -29,14 +33,86 @@ void CryptoPrimitives::hkdf_sha256(uint8_t *out, size_t out_len, const uint8_t *
 }
 
 bool CryptoPrimitives::aes_gcm_encrypt(uint8_t *out, size_t out_len, const uint8_t *plaintext, size_t plaintext_len,
-                                       const uint8_t *aad, size_t aad_len, const uint8_t *key, const uint8_t *nonce) {
-    // AES-GCM encryption logic using BoringSSL
+                                       const uint8_t *aad, size_t aad_len, const uint8_t *key, uint8_t *nonce) {
+    const EVP_AEAD* aead = EVP_aead_aes_256_gcm();
+
+    EVP_AEAD_CTX ctx;
+    if (!EVP_AEAD_CTX_init(&ctx, aead, key, 32, 16, nullptr)) {
+        return false;
+    }
+
+    // We generate the nonce ourselves on the external buffer.
+    // Note: we can't check that the buffer is actually 96 bits. 
+    // That's a problem for the participant.
+    // We really should be using a determninistic counter instead, 
+    // but since we only use ephemeral HKDF-based keys this is still safe.
+    RAND_bytes(nonce, 12);
+
+    size_t max_out_len = plaintext_len + EVP_AEAD_max_overhead(aead);
+    // Check that our output buffer size (set to its actual max size) is smaller than this
+    if (max_out_len > out_len){
+        throw std::runtime_error("Error writing AEAD ciphertext: incorrect buffer size!");
+    }
+
+    if (!EVP_AEAD_CTX_seal(
+            &ctx,
+            out,
+            &out_len,
+            max_out_len,
+            nonce,
+            12,
+            plaintext,
+            plaintext_len,
+            aad,
+            aad_len)) {
+        EVP_AEAD_CTX_cleanup(&ctx);
+        return false;
+    }
+
+    EVP_AEAD_CTX_cleanup(&ctx);
     return true;
 }
 
 bool CryptoPrimitives::aes_gcm_decrypt(uint8_t *out, size_t out_len, const uint8_t *ciphertext, size_t ciphertext_len,
                                        const uint8_t *aad, size_t aad_len, const uint8_t *key, const uint8_t *nonce) {
-    // AES-GCM decryption logic using BoringSSL
+    const EVP_AEAD* aead = EVP_aead_aes_256_gcm();
+
+    EVP_AEAD_CTX ctx;
+    if (!EVP_AEAD_CTX_init(&ctx, aead, key, 32, 16, nullptr)) {
+        return false;
+    }
+
+    // Same as encryption. Check structure for max allowed size, then write down actual size.
+    if (out_len < ciphertext_len){
+        throw std::runtime_error("Error decrypting AEAD ciphertext: not enough plaintext buffer!");
+    }
+
+    if (!EVP_AEAD_CTX_open(
+            &ctx,
+            out,
+            &out_len,
+            ciphertext_len,
+            nonce,
+            12,
+            ciphertext,
+            ciphertext_len,
+            aad,
+            aad_len)) {
+        EVP_AEAD_CTX_cleanup(&ctx);
+        return false;  // authentication failure
+    }
+
+    EVP_AEAD_CTX_cleanup(&ctx);
+    return true;
+}
+
+bool CryptoPrimitives::aes_hmac_tag(uint8_t *out, size_t *out_len, const uint8_t *key, const size_t key_len, const uint8_t *data, const size_t data_len)
+{
+    if (*out_len < EVP_MAX_MD_SIZE){
+        throw std::runtime_error("Error generating HMAC tag: no guarantee of buffer size!");
+    }
+
+    HMAC(EVP_sha256(),key,key_len,data,data_len,out,(unsigned int*)out_len);
     return true;
 }
 
@@ -56,4 +132,24 @@ bool CryptoPrimitives::sss_share_reconstruct(uint8_t *out, size_t out_len, uint8
     sss_combine_shares(outbuf,(sss_Share*) in, num_shares);
     memcpy(out,outbuf,out_len);
     return true;
+}
+
+uint64_t CryptoPrimitives::secure_random_uint64(const uint64_t max)
+{
+    if (max == 0) return 0;
+
+    uint64_t x;
+    uint64_t limit = UINT64_MAX - (UINT64_MAX % max);
+
+    do {
+        RAND_bytes(reinterpret_cast<uint8_t*>(&x), sizeof(x));
+    } while (x >= limit);
+
+    return x % max;
+}
+
+void CryptoPrimitives::gen_dummy(uint8_t *out, size_t out_len)
+{
+    sss_create_shares((sss_Share*)out, (const uint8_t*)"dummy", 1, 1);
+
 }

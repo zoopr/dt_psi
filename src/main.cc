@@ -10,6 +10,8 @@
 
 #include <crypto/crypto_primitives.h>
 #include <protocol/keyholder.h>
+#include <protocol/participant.h>
+#include <protocol/reconstructor.h>
 
 
 // Toy example macros, leave when done
@@ -80,6 +82,17 @@ int main(int argc, char *argv[]){
     
     KeyHolder kh(1000,10,100,3);
 
+    Participant p1, p2, p3, p4, p5;
+    Reconstructor r;
+
+    p1.init_data(&kh);
+    p2.init_data(&kh);
+    p3.init_data(&kh);
+    p4.init_data(&kh);
+    p5.init_data(&kh);
+
+    r.init_data(&kh);
+
     /*
     PHASE 2: Exploration and reconstruction
     Each participant Pi has a private set EXPLORED which contains which coordinates it has personally explored.
@@ -106,6 +119,7 @@ int main(int argc, char *argv[]){
 
     When receiving the PSI broadcast, each participant:
     - Creates the TO_EXPLORE coordinate subset by intersecting complement of EXPLORED with complement of PSI.
+    - Updates a different subset DONOT_SHARE which is the union of TO_EXPLORE and PSI. Essentially, sharing already confirmed coords opens us to differential attacks.
     - Based on current location, select likely candidates to explore during next round. This can be local exploration, or any other strategy.
     - This strategy is developed independently by each member.
     */

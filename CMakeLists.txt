@@ -18,6 +18,7 @@ add_subdirectory(vendor/sss)
 add_library(maincrypto
     src/crypto/crypto_primitives.cc
     src/protocol/participant.cc
+    src/protocol/reconstructor.cc
     src/protocol/keyholder.cc
 )
 
