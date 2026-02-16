@@ -15,10 +15,10 @@ public:
     static void hkdf_sha256(uint8_t *out, size_t out_len, const uint8_t *ikm, size_t ikm_len,
                             const uint8_t *salt, size_t salt_len, const uint8_t *info, size_t info_len);
 // AES-GCM AEAD primitive
-    static bool aes_gcm_encrypt(uint8_t *out, size_t out_len, const uint8_t *plaintext, size_t plaintext_len,
+    static bool aes_gcm_encrypt(std::vector<uint8_t> *out, size_t out_len, const uint8_t *plaintext, size_t plaintext_len,
                                  const uint8_t *aad, size_t aad_len, const uint8_t *key, uint8_t *nonce);
 
-    static bool aes_gcm_decrypt(uint8_t *out, size_t out_len, const uint8_t *ciphertext, size_t ciphertext_len,
+    static bool aes_gcm_decrypt(std::vector<uint8_t> *out, size_t out_len, const uint8_t *ciphertext, size_t ciphertext_len,
                                  const uint8_t *aad, size_t aad_len, const uint8_t *key, const uint8_t *nonce);
 // MAC primitive
     static bool aes_hmac_tag(uint8_t *out, size_t* out_len, const uint8_t *key, const size_t key_len, const uint8_t *data, const size_t data_len);
@@ -30,6 +30,8 @@ public:
     static uint64_t secure_random_uint64(const uint64_t max);
 
     static void gen_dummy(uint8_t *out, size_t out_len);
+
+    static bool secure_compare(uint8_t* b1, uint8_t* b2, size_t len);
 };
 
 #endif

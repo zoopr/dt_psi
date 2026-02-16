@@ -111,6 +111,12 @@ int main(int argc, char *argv[]){
     - Add point to final PSI, move to next coordinate.
     */
 
+    p1.send_round_shares(&r);
+    p2.send_round_shares(&r);
+    p3.send_round_shares(&r);
+    p4.send_round_shares(&r);
+    p5.send_round_shares(&r);
+
     /*
     PHASE 3: HANDOVER
     After completing the PSI evaluation, the reconstructor:

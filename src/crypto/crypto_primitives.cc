@@ -1,6 +1,7 @@
 #include "crypto_primitives.h"
 
 #include <stdexcept>
+#include <iostream>
 
 #include <openssl/aead.h>
 #include <openssl/curve25519.h>
@@ -8,6 +9,8 @@
 #include <openssl/rand.h>
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
+#include <openssl/crypto.h>
+
 
 
 extern "C" {
@@ -32,7 +35,7 @@ void CryptoPrimitives::hkdf_sha256(uint8_t *out, size_t out_len, const uint8_t *
     HKDF(out, out_len, EVP_sha256(), ikm, ikm_len, salt, salt_len, info, info_len);
 }
 
-bool CryptoPrimitives::aes_gcm_encrypt(uint8_t *out, size_t out_len, const uint8_t *plaintext, size_t plaintext_len,
+bool CryptoPrimitives::aes_gcm_encrypt(std::vector<uint8_t>* out, size_t out_len, const uint8_t *plaintext, size_t plaintext_len,
                                        const uint8_t *aad, size_t aad_len, const uint8_t *key, uint8_t *nonce) {
     const EVP_AEAD* aead = EVP_aead_aes_256_gcm();
 
@@ -51,12 +54,13 @@ bool CryptoPrimitives::aes_gcm_encrypt(uint8_t *out, size_t out_len, const uint8
     size_t max_out_len = plaintext_len + EVP_AEAD_max_overhead(aead);
     // Check that our output buffer size (set to its actual max size) is smaller than this
     if (max_out_len > out_len){
-        throw std::runtime_error("Error writing AEAD ciphertext: incorrect buffer size!");
+        std::cout << "Need to resize to MAX_OUT_LEN: "<< max_out_len <<std::endl;
+        out->resize(max_out_len);
     }
 
     if (!EVP_AEAD_CTX_seal(
             &ctx,
-            out,
+            out->data(),
             &out_len,
             max_out_len,
             nonce,
@@ -68,12 +72,13 @@ bool CryptoPrimitives::aes_gcm_encrypt(uint8_t *out, size_t out_len, const uint8
         EVP_AEAD_CTX_cleanup(&ctx);
         return false;
     }
+    out->resize(out_len); // Crop down to ciphertext.
 
     EVP_AEAD_CTX_cleanup(&ctx);
     return true;
 }
 
-bool CryptoPrimitives::aes_gcm_decrypt(uint8_t *out, size_t out_len, const uint8_t *ciphertext, size_t ciphertext_len,
+bool CryptoPrimitives::aes_gcm_decrypt(std::vector<uint8_t>* out, size_t out_len, const uint8_t *ciphertext, size_t ciphertext_len,
                                        const uint8_t *aad, size_t aad_len, const uint8_t *key, const uint8_t *nonce) {
     const EVP_AEAD* aead = EVP_aead_aes_256_gcm();
 
@@ -84,12 +89,12 @@ bool CryptoPrimitives::aes_gcm_decrypt(uint8_t *out, size_t out_len, const uint8
 
     // Same as encryption. Check structure for max allowed size, then write down actual size.
     if (out_len < ciphertext_len){
-        throw std::runtime_error("Error decrypting AEAD ciphertext: not enough plaintext buffer!");
+        out->resize(ciphertext_len);
     }
 
     if (!EVP_AEAD_CTX_open(
             &ctx,
-            out,
+            out->data(),
             &out_len,
             ciphertext_len,
             nonce,
@@ -101,6 +106,7 @@ bool CryptoPrimitives::aes_gcm_decrypt(uint8_t *out, size_t out_len, const uint8
         EVP_AEAD_CTX_cleanup(&ctx);
         return false;  // authentication failure
     }
+    out->resize(out_len); // Crop down to plaintext.
 
     EVP_AEAD_CTX_cleanup(&ctx);
     return true;
@@ -152,4 +158,10 @@ void CryptoPrimitives::gen_dummy(uint8_t *out, size_t out_len)
 {
     sss_create_shares((sss_Share*)out, (const uint8_t*)"dummy", 1, 1);
 
+}
+
+bool CryptoPrimitives::secure_compare(uint8_t *b1, uint8_t *b2, size_t len)
+{
+    // Returns true on exact match up to len.
+    return !CRYPTO_memcmp(b1, b2, len);
 }

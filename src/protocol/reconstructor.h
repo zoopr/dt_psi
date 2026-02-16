@@ -15,7 +15,8 @@ extern "C" {
 class Reconstructor{
 private:
     reconstructor_proto_data_t params;
-    std::vector<cpp_share> current_share_table;
+    uint64_t current_round = 0;
+    std::vector<std::vector<cpp_share>> current_share_table;
     std::set<uint64_t> current_psi;    
 public:
     bool init_data(KeyHolder* kh);

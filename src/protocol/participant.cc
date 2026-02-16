@@ -2,6 +2,7 @@
 #include <iterator>
 #include <vector>
 #include <cstring>
+#include <iostream>
 
 
 #include "crypto/crypto_primitives.h"
@@ -50,35 +51,47 @@ bool Participant::send_round_shares(Reconstructor *r)
     CryptoPrimitives::x25519_shared(ss,eph_pr,params.reconstructor_pubkey);
     // Create symmetric round key with info = little-endian round value
     CryptoPrimitives::hkdf_sha256(roundkey,32,ss,32,0,0,(const uint8_t *)&current_round,sizeof(current_round));
+    std::cout << "DEBUG roundkey par: " << roundkey << std::endl;
 
-    std::vector<uint8_t> c_sym(sizeof(ei));
-    std::vector<uint8_t> produced_nonce(12); // Generated inside encryption, not here!
+
+    std::vector<uint8_t> c_sym;
+    std::array<uint8_t, 12> produced_nonce; // Generated inside encryption, not here!
     // Not great cast to ei[0][0] for start pointer. they SHOULD be continuously allocated.
-    CryptoPrimitives::aes_gcm_encrypt(c_sym.data(), sizeof(c_sym),ei.data()->data(),sizeof(ei),(const uint8_t *)&current_round,sizeof(current_round),roundkey,produced_nonce.data());
+    CryptoPrimitives::aes_gcm_encrypt(&c_sym, 0,ei.data()->data(),ei.size()*sizeof(ei[0]),(const uint8_t *)&current_round,sizeof(current_round),roundkey,produced_nonce.data());
     
     // Generate final ciphertext to MAC
-    std::vector<uint8_t> C_i(sizeof(eph_pub)+sizeof(produced_nonce)+sizeof(c_sym)+sizeof(current_round));
+    std::cout << "Generate final ciphertext to MAC" << std::endl;
+    std::vector<uint8_t> C_i(sizeof(eph_pub)+12+(c_sym.size())+sizeof(current_round)); // C_sym has size()*uint8_t=1 size
     // TERRIBLE pointer math to allocate continuously.
     uint8_t* ci_ptr = C_i.data();
     std::memcpy(ci_ptr,eph_pub,sizeof(eph_pub));
     ci_ptr += sizeof(eph_pub);
-    std::memcpy(ci_ptr,produced_nonce.data(),sizeof(produced_nonce));
-    ci_ptr += sizeof(produced_nonce);
-    std::memcpy(ci_ptr,c_sym.data(),sizeof(c_sym));
-    ci_ptr += sizeof(c_sym);
+    std::memcpy(ci_ptr,produced_nonce.data(),12);
+    ci_ptr += 12;
+    std::memcpy(ci_ptr,c_sym.data(),c_sym.size());
+    ci_ptr += c_sym.size();
     std::memcpy(ci_ptr,&current_round,sizeof(current_round));
 
     // Derive round-MAC key. NOTE: reuse roundkey buffer for simplicity. Be careful.
+    
+    std::cout << "Derive MAC key" << std::endl;
     CryptoPrimitives::hkdf_sha256(roundkey,32,params.kG,32,0,0,(const uint8_t *)&current_round,sizeof(current_round));
     std::array<uint8_t, 64> hmac_tag; // Could be 32, but we are forcing compatibility with Sha512 if we want to use it.
     size_t tag_len = 64;
     CryptoPrimitives::aes_hmac_tag(hmac_tag.data(),&tag_len,roundkey,sizeof(roundkey),C_i.data(),sizeof(C_i));
 
     // Final structure to send: (C_i || tag, sizeof()) 
-    std::vector<uint8_t> final_c(sizeof(C_i)+tag_len);
-    std::memcpy(final_c.data(),C_i.data(),sizeof(C_i));
-    std::memcpy(final_c.data()+sizeof(C_i),hmac_tag.data(),tag_len);
+    
+    std::vector<uint8_t> final_c(C_i.size()+tag_len);
+    std::memcpy(final_c.data(),C_i.data(),C_i.size());
+    if (tag_len != 32) {
+        throw std::runtime_error("Tag_len != 32 but we should be in SHA256. Wrong params?");
+    }
+    std::memcpy(final_c.data()+C_i.size(),hmac_tag.data(),32);
 
-    r->decrypt_row(final_c.data(), sizeof(final_c));
+    r->decrypt_row(final_c.data(), final_c.size());
+
+    current_round += 1;
+
     return true;
 }
