@@ -107,7 +107,7 @@ void Reconstructor::reconstruct_round()
             rowshares[i] = current_share_table[i][coord];
         }
 
-        CombinationGen gen(0,current_share_table.size(),params.threshold);
+        CombinationGen gen(0,current_share_table.size()-1,params.threshold);
         while (std::optional<std::vector<uint64_t>> combination = gen.next()){
             std::cout << "DEBUG combination: " << std::endl;
             for (int value : combination.value()) {
