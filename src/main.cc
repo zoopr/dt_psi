@@ -111,11 +111,13 @@ int main(int argc, char *argv[]){
     - Add point to final PSI, move to next coordinate.
     */
 
-    p1.explore(100);
-    p2.explore(100);
-    p3.explore(100);
-    p4.explore(100);
-    p5.explore(100);
+    // Keep in mind fully random exploration per-step != 100 distinct coordinates!
+    // TODO also for final section: offer informed exploration.
+    p1.explore(30);
+    p2.explore(30);
+    p3.explore(30);
+    p4.explore(30);
+    p5.explore(30);
 
     p1.send_round_shares(&r);
     p2.send_round_shares(&r);
@@ -137,6 +139,14 @@ int main(int argc, char *argv[]){
     - Based on current location, select likely candidates to explore during next round. This can be local exploration, or any other strategy.
     - This strategy is developed independently by each member.
     */
+
+    std::cout << "End of round PSI:" << std::endl;
+    for (int value : r.get_psi()) {
+        std::cout << value << " ";
+    }
+    std::cout << "\n";
+
+
     } catch (const std::exception& e) {
         std::cerr << "Main test failed: " << e.what() << std::endl;
         return 1;

@@ -3,6 +3,9 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <vector>
+#include <set>
+#include <optional>
 
 #include "crypto_types.h"
 
@@ -32,6 +35,22 @@ public:
     static void gen_dummy(uint8_t *out, size_t out_len);
 
     static bool secure_compare(uint8_t* b1, uint8_t* b2, size_t len);
+};
+
+class CombinationGen {
+public:
+    CombinationGen(uint64_t min, uint64_t max, size_t k);
+    std::optional<std::vector<uint64_t>> next();
+private:
+    private:
+    int min_;
+    int max_;
+    size_t K;
+    size_t N;
+    std::vector<size_t> indices;
+    bool done;
+
+    void advance();
 };
 
 #endif

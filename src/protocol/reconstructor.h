@@ -24,6 +24,8 @@ public:
     bool decrypt_row(uint8_t* in, size_t in_len);// TODO Ciphertext data structure
     
     void reconstruct_round(); // TODO combinatory subgroups + SSS reconstruction on known value.
+
+    std::set<uint64_t> get_psi();
 };
 
 #endif

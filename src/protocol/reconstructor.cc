@@ -101,25 +101,43 @@ void Reconstructor::reconstruct_round()
 
     for (uint64_t coord = 0; coord < params.coord_range; coord++) {
         // TODO Create permutations of collected shares
-        std::vector<uint64_t> subset = {0,1,2,3,4};
-        std::vector<cpp_share> subshares(subset.size());
-        for(int i = 0; i < subset.size(); i++){
-            subshares[i] = current_share_table[subset[i]][coord];
+        
+        std::vector<cpp_share> rowshares(current_share_table.size());
+        for(int i = 0; i < current_share_table.size(); i++){
+            rowshares[i] = current_share_table[i][coord];
         }
-        // Expected decryption result is C-string "coord,round"
-        int msglen = std::snprintf((char*)msgbuf,sss_MLEN,"%d,%d",current_round,coord);
-        CryptoPrimitives::sss_share_reconstruct(outbuf,sss_MLEN,subshares.data()->data(),subshares.size()*sizeof(subshares[0]),params.threshold);
-        // If decryption is successful and the shared secret matches the expected result:
-        if (CryptoPrimitives::secure_compare(msgbuf,outbuf,msglen)) {
-            // DEBUG. Remove on high permutation count, obviously!
-            current_psi.insert(coord);
-            continue; // Short circuit for this coordinate. This will be a break when we have an actual loop for permutations.
-        } else {
-            std::cout << "Row reconstruction failed. Reported value:" << (char*)outbuf <<std::endl;
 
+        CombinationGen gen(0,current_share_table.size(),params.threshold);
+        while (std::optional<std::vector<uint64_t>> combination = gen.next()){
+            std::cout << "DEBUG combination: " << std::endl;
+            for (int value : combination.value()) {
+                std::cout << value << " ";
+            }
+            std::vector<cpp_share> subshare; // TODO
+            for(uint64_t i : combination.value()){
+                subshare.push_back(rowshares[i]);
+            }
+            // Expected decryption result is C-string "coord,round"
+            std::memset(msgbuf,0,sss_MLEN);
+            std::memset(outbuf,0,sss_MLEN);
+            int msglen = std::snprintf((char*)msgbuf,sss_MLEN,"%d,%d",current_round,coord);
+            CryptoPrimitives::sss_share_reconstruct(outbuf,sss_MLEN,subshare.data()->data(),subshare.size()*sizeof(subshare[0]),params.threshold);
+            // If decryption is successful and the shared secret matches the expected result:
+            if (CryptoPrimitives::secure_compare(msgbuf,outbuf,msglen)) {
+                // DEBUG. Remove on high permutation count, obviously!
+                current_psi.insert(coord);
+                break; // Short circuit for this coordinate. This will be a break when we have an actual loop for permutations.
+            } else {
+                std::cout << "Row reconstruction failed. \nReported value:" << (char*)outbuf <<" Actual Value:"<<(char*) msgbuf<< std::endl;
+            }
         }
     }
     // Finally, erase contents of share-matrix and start new round.
     current_share_table.clear();
     current_round++;
+}
+
+std::set<uint64_t> Reconstructor::get_psi()
+{
+    return current_psi;
 }

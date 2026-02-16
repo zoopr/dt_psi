@@ -165,3 +165,51 @@ bool CryptoPrimitives::secure_compare(uint8_t *b1, uint8_t *b2, size_t len)
     // Returns true on exact match up to len.
     return !CRYPTO_memcmp(b1, b2, len);
 }
+
+CombinationGen::CombinationGen(uint64_t min, uint64_t max, size_t k)
+: min_(min), max_(max), K(k),
+          N(max - min + 1),
+          indices(k),
+          done(false)
+{
+    if (K > N || K == 0) {
+        done = true;
+        return;
+    }
+
+    for (size_t i = 0; i < K; ++i)
+        indices[i] = i;
+}
+
+
+std::optional<std::vector<uint64_t>> CombinationGen::next()
+{
+    if (done) return std::nullopt;
+
+        std::vector<uint64_t> result;
+        result.reserve(K);
+
+        for (size_t i = 0; i < K; ++i)
+            result.push_back(min_ + indices[i]);
+
+        advance();
+        return result;
+}
+
+void CombinationGen::advance()
+{
+    int i = K - 1;
+
+    while (i >= 0 && indices[i] == N - K + i)
+        --i;
+
+    if (i < 0) {
+        done = true;
+        return;
+    }
+
+    ++indices[i];
+
+    for (size_t j = i + 1; j < K; ++j)
+        indices[j] = indices[j - 1] + 1;
+}
