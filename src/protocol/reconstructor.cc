@@ -96,11 +96,30 @@ void Reconstructor::reconstruct_round()
     // TODO
     // Process vector of decrypted rows.
     // For each coordinate not in the confirmed PSI:
-    // Create permutations of collected shares
-    // Perform share decryption
-    // Expected decryption result is C-string "coord,round"
-    // If decryption is successful and the shared secret matches the expected result:
-    // Short-circuit for this coordinate
-    // Add coordinate to public PSI data.
+    uint8_t msgbuf[sss_MLEN] = {0,};
+    uint8_t outbuf[sss_MLEN] = {0,};
+
+    for (uint64_t coord = 0; coord < params.coord_range; coord++) {
+        // TODO Create permutations of collected shares
+        std::vector<uint64_t> subset = {0,1,2,3,4};
+        std::vector<cpp_share> subshares(subset.size());
+        for(int i = 0; i < subset.size(); i++){
+            subshares[i] = current_share_table[subset[i]][coord];
+        }
+        // Expected decryption result is C-string "coord,round"
+        int msglen = std::snprintf((char*)msgbuf,sss_MLEN,"%d,%d",current_round,coord);
+        CryptoPrimitives::sss_share_reconstruct(outbuf,sss_MLEN,subshares.data()->data(),subshares.size()*sizeof(subshares[0]),params.threshold);
+        // If decryption is successful and the shared secret matches the expected result:
+        if (CryptoPrimitives::secure_compare(msgbuf,outbuf,msglen)) {
+            // DEBUG. Remove on high permutation count, obviously!
+            current_psi.insert(coord);
+            continue; // Short circuit for this coordinate. This will be a break when we have an actual loop for permutations.
+        } else {
+            std::cout << "Row reconstruction failed. Reported value:" << (char*)outbuf <<std::endl;
+
+        }
+    }
     // Finally, erase contents of share-matrix and start new round.
+    current_share_table.clear();
+    current_round++;
 }

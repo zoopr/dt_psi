@@ -35,6 +35,7 @@ bool Participant::send_round_shares(Reconstructor *r)
     for (uint64_t i = 0; i < params.coord_range; i++) {
         if (frontier.find(i) != frontier.end()) {
             // If the index is in frontier, set legitimate share.
+            std::cout << "Putting real share for coord "<< std::dec << i << std::endl;
             ei[i] = params.shareMatrix[current_round*params.coord_range + i];
         } else {
             // Generate independent dummy from arbitrary degree-1 polynomial.

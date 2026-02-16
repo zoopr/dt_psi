@@ -80,7 +80,7 @@ int main(int argc, char *argv[]){
 
     */
     
-    KeyHolder kh(1000,10,100,3);
+    KeyHolder kh(100,10,100,3);
 
     Participant p1, p2, p3, p4, p5;
     Reconstructor r;
@@ -111,11 +111,19 @@ int main(int argc, char *argv[]){
     - Add point to final PSI, move to next coordinate.
     */
 
+    p1.explore(100);
+    p2.explore(100);
+    p3.explore(100);
+    p4.explore(100);
+    p5.explore(100);
+
     p1.send_round_shares(&r);
     p2.send_round_shares(&r);
     p3.send_round_shares(&r);
     p4.send_round_shares(&r);
     p5.send_round_shares(&r);
+
+    r.reconstruct_round();
 
     /*
     PHASE 3: HANDOVER
