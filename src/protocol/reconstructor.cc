@@ -18,24 +18,24 @@ bool Reconstructor::decrypt_row(uint8_t *in, size_t in_len)
 
     // Generate MAC key for tag retrieval.
     
-    std::cout << "Generate Reconstructor mac" << std::endl;
+    // std::cout << "Generate Reconstructor mac" << std::endl;
     uint8_t mac_key[32];
     CryptoPrimitives::hkdf_sha256(mac_key,32,params.kG,32,0,0,(const uint8_t *)&current_round,sizeof(current_round));
     
     // Dissect ciphertext.
     
-    std::cout << "Dissect ciphertext" << std::endl;
+    // std::cout << "Dissect ciphertext" << std::endl;
     std::array<uint8_t, 32> reported_tag; // Could be 32, but we are forcing compatibility with Sha512 if we want to use it.
     size_t tag_len = 32; // Hardcoded because of our use of sha256. TODO: move to KH-defined params as in the paper!
     size_t Ci_len = in_len-tag_len;
-    std::cout << "Expected ciphertext len: " <<Ci_len<< std::endl;
+    // std::cout << "Expected ciphertext len: " <<Ci_len<< std::endl;
     std::vector<uint8_t> C_i(Ci_len);
     std::memcpy(C_i.data(), in, Ci_len);
     std::memcpy(reported_tag.data(), in+Ci_len, tag_len);
     
     // Confirm HMAC
     
-    std::cout << "Confirm HMAC" << std::endl;
+    // std::cout << "Confirm HMAC" << std::endl;
     std::array<uint8_t, 64> hmac_tag; // Could be 32, but we are forcing compatibility with Sha512 if we want to use it.
     tag_len = 64; // For compatibility with max allowed SHA512. We will use Sha256, and this is reflected in dissection above.
     CryptoPrimitives::aes_hmac_tag(hmac_tag.data(),&tag_len,mac_key,sizeof(mac_key),C_i.data(),sizeof(C_i));
@@ -54,7 +54,7 @@ bool Reconstructor::decrypt_row(uint8_t *in, size_t in_len)
     CryptoPrimitives::x25519_shared(ss,params.reconstructor_privkey,eph_pub);
     // Create symmetric round key with info = little-endian round value
     CryptoPrimitives::hkdf_sha256(roundkey,32,ss,32,0,0,(const uint8_t *)&current_round,sizeof(current_round));
-    std::cout << "DEBUG roundkey rec: " << roundkey << std::endl;
+    // std::cout << "DEBUG roundkey rec: " << roundkey << std::endl;
     
     
     std::array<uint8_t, 12> produced_nonce;
@@ -65,7 +65,7 @@ bool Reconstructor::decrypt_row(uint8_t *in, size_t in_len)
     std::memcpy(&current_round_received, C_i.data()+C_i.size()-sizeof(current_round_received), sizeof(current_round_received));
     // Check if we are synchronized!
     if (current_round_received != current_round) {
-        std::cout << "Discrepancy in round numbers: "<< current_round_received << "vs. local " << current_round << ". Should we correct this?" << std::endl;
+        // std::cout << "Discrepancy in round numbers: "<< current_round_received << "vs. local " << current_round << ". Should we correct this?" << std::endl;
         return false;// TODO wipe matrix!
     }
 
@@ -79,14 +79,14 @@ bool Reconstructor::decrypt_row(uint8_t *in, size_t in_len)
     // Decrypt C_i based on received nonce and round key
     std::vector<uint8_t> raw_ei(params.coord_range*sizeof(cpp_share));
     if (!CryptoPrimitives::aes_gcm_decrypt(&raw_ei,raw_ei.size()*sizeof(raw_ei[0]),C_sym.data(),csym_size,(const uint8_t *)&current_round,sizeof(current_round),roundkey,produced_nonce.data())){
-        std::cout << "Decryption unsuccessful! Skipping row..."<<std::endl;
+        // std::cout << "Decryption unsuccessful! Skipping row..."<<std::endl;
         return false;
     }
     // Just for convenience, copy into proper vector of shares, then add to matrix.
     std::vector<cpp_share> ei(params.coord_range);
     std::memcpy(ei.data()->data(),raw_ei.data(),params.coord_range*sizeof(cpp_share));
     current_share_table.push_back(ei);
-    std::cout << "Decryption successful. Current Reconstructor rows: "<< current_share_table.size() << std::endl;
+    // std::cout << "Decryption successful. Current Reconstructor rows: "<< current_share_table.size() << std::endl;
 
     return true;
 }
@@ -109,9 +109,9 @@ void Reconstructor::reconstruct_round()
 
         CombinationGen gen(0,current_share_table.size()-1,params.threshold);
         while (std::optional<std::vector<uint64_t>> combination = gen.next()){
-            std::cout << "DEBUG combination: " << std::endl;
+            // std::cout << "DEBUG combination: " << std::endl;
             for (int value : combination.value()) {
-                std::cout << value << " ";
+                // std::cout << value << " ";
             }
             std::vector<cpp_share> subshare; // TODO
             for(uint64_t i : combination.value()){
@@ -128,7 +128,7 @@ void Reconstructor::reconstruct_round()
                 current_psi.insert(coord);
                 break; // Short circuit for this coordinate. This will be a break when we have an actual loop for permutations.
             } else {
-                std::cout << "Row reconstruction failed. \nReported value:" << (char*)outbuf <<" Actual Value:"<<(char*) msgbuf<< std::endl;
+                // std::cout << "Row reconstruction failed. \nReported value:" << (char*)outbuf <<" Actual Value:"<<(char*) msgbuf<< std::endl;
             }
         }
     }

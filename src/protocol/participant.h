@@ -18,6 +18,7 @@ public:
     bool init_data(KeyHolder* kh);
     void explore(uint64_t steps);
     bool send_round_shares(Reconstructor* r);
+    void update_confirmed(std::set<uint64_t> last_PSI);
 };
 
 #endif

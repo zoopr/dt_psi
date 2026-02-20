@@ -15,9 +15,26 @@ bool Participant::init_data(KeyHolder *kh)
 
 void Participant::explore(uint64_t steps)
 {
-    // Simple random addition. TODO More complex strategies based on map morphology.
+    std::set<uint64_t> not_needed;
+    std::set_union(explored.begin(), explored.end(),
+        confirmed.begin(), confirmed.end(),
+        std::inserter(not_needed,not_needed.begin()));
+    // Simple rejection sampling. This slows down the sim in "real" scenarios. 
+    // Better to sample from the complementary set.
+    // For now this is ok, because we're not timing the actual exploration algorithms.
+    if (not_needed.size() == params.coord_range){
+        std::cout << "Nothing left to explore! Rest of the algo should be short circuiting." <<std::endl;
+        return;
+    }
     for(uint64_t i = 0; i<steps; ++i) {
-        explored.insert(CryptoPrimitives::secure_random_uint64(params.coord_range));
+        uint64_t cand;
+        do {
+            cand = CryptoPrimitives::secure_random_uint64(params.coord_range);
+            // std::cout << "DEBUG: precise cand cnt: " <<explored.count(cand)<<","<< confirmed.count(cand)<<std::endl;           
+        }
+        while(not_needed.count(cand));
+        explored.insert(cand);
+        // std::cout << "DEBUG inserted "<<cand<<"into participant."<<std::endl;
     }
 }
 
@@ -35,7 +52,7 @@ bool Participant::send_round_shares(Reconstructor *r)
     for (uint64_t i = 0; i < params.coord_range; i++) {
         if (frontier.find(i) != frontier.end()) {
             // If the index is in frontier, set legitimate share.
-            std::cout << "Putting real share for coord "<< std::dec << i << std::endl;
+            // std::cout << "Putting real share for coord "<< std::dec << i << std::endl;
             ei[i] = params.shareMatrix[current_round*params.coord_range + i];
         } else {
             // Generate independent dummy from arbitrary degree-1 polynomial.
@@ -52,7 +69,7 @@ bool Participant::send_round_shares(Reconstructor *r)
     CryptoPrimitives::x25519_shared(ss,eph_pr,params.reconstructor_pubkey);
     // Create symmetric round key with info = little-endian round value
     CryptoPrimitives::hkdf_sha256(roundkey,32,ss,32,0,0,(const uint8_t *)&current_round,sizeof(current_round));
-    std::cout << "DEBUG roundkey par: " << roundkey << std::endl;
+    // std::cout << "DEBUG roundkey par: " << roundkey << std::endl;
 
 
     std::vector<uint8_t> c_sym;
@@ -61,7 +78,7 @@ bool Participant::send_round_shares(Reconstructor *r)
     CryptoPrimitives::aes_gcm_encrypt(&c_sym, 0,ei.data()->data(),ei.size()*sizeof(ei[0]),(const uint8_t *)&current_round,sizeof(current_round),roundkey,produced_nonce.data());
     
     // Generate final ciphertext to MAC
-    std::cout << "Generate final ciphertext to MAC" << std::endl;
+    // std::cout << "Generate final ciphertext to MAC" << std::endl;
     std::vector<uint8_t> C_i(sizeof(eph_pub)+12+(c_sym.size())+sizeof(current_round)); // C_sym has size()*uint8_t=1 size
     // TERRIBLE pointer math to allocate continuously.
     uint8_t* ci_ptr = C_i.data();
@@ -75,7 +92,7 @@ bool Participant::send_round_shares(Reconstructor *r)
 
     // Derive round-MAC key. NOTE: reuse roundkey buffer for simplicity. Be careful.
     
-    std::cout << "Derive MAC key" << std::endl;
+    // std::cout << "Derive MAC key" << std::endl;
     CryptoPrimitives::hkdf_sha256(roundkey,32,params.kG,32,0,0,(const uint8_t *)&current_round,sizeof(current_round));
     std::array<uint8_t, 64> hmac_tag; // Could be 32, but we are forcing compatibility with Sha512 if we want to use it.
     size_t tag_len = 64;
@@ -95,4 +112,9 @@ bool Participant::send_round_shares(Reconstructor *r)
     current_round += 1;
 
     return true;
+}
+
+void Participant::update_confirmed(std::set<uint64_t> last_PSI)
+{
+    confirmed = last_PSI;
 }

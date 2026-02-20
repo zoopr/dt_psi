@@ -54,7 +54,7 @@ bool CryptoPrimitives::aes_gcm_encrypt(std::vector<uint8_t>* out, size_t out_len
     size_t max_out_len = plaintext_len + EVP_AEAD_max_overhead(aead);
     // Check that our output buffer size (set to its actual max size) is smaller than this
     if (max_out_len > out_len){
-        std::cout << "Need to resize to MAX_OUT_LEN: "<< max_out_len <<std::endl;
+        // std::cout << "Need to resize to MAX_OUT_LEN: "<< max_out_len <<std::endl;
         out->resize(max_out_len);
     }
 

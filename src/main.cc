@@ -14,43 +14,43 @@
 #include <protocol/reconstructor.h>
 
 
-// Toy example macros, leave when done
-#define NUM_SHARES 5
-#define THRESHOLD 3
+// // Toy example macros, leave when done
+// #define NUM_SHARES 5
+// #define THRESHOLD 3
 
 int main(int argc, char *argv[]){
 
     // Toy example: are our primitives imported properly
 
-    uint8_t priv[32];
-    uint8_t pub[32];
+    // uint8_t priv[32];
+    // uint8_t pub[32];
 
 
-    sss_Share ourShares[NUM_SHARES];
-    const char secret[sss_MLEN] = "wow this works";
-    char reconstruct[sss_MLEN];
+    // sss_Share ourShares[NUM_SHARES];
+    // const char secret[sss_MLEN] = "wow this works";
+    // char reconstruct[sss_MLEN];
 
-    // Curve 25519 tests
+    // // Curve 25519 tests
 
-    CryptoPrimitives::x25519_keypair(priv,pub);
+    // CryptoPrimitives::x25519_keypair(priv,pub);
 
-    std::cout << "Priv: " << std::endl;
-    for (const auto& e : priv) {
-        std::cout << std::hex << +e;
-    }
+    // std::cout << "Priv: " << std::endl;
+    // for (const auto& e : priv) {
+    //     std::cout << std::hex << +e;
+    // }
 
-    std::cout << "\nPub: " << std::endl;
-    for (const auto& e : pub) {
-        std::cout << std::hex << +e;
-    }
+    // std::cout << "\nPub: " << std::endl;
+    // for (const auto& e : pub) {
+    //     std::cout << std::hex << +e;
+    // }
 
-    // SSS tests
-    // Construct N shares at threshold T
-    CryptoPrimitives::sss_share_gen(*ourShares, sizeof(ourShares), (uint8_t*) secret, (const uint8_t) NUM_SHARES, (const uint8_t) THRESHOLD); 
-    // Reconstruct from shares 3-5. Obviously the shares size is wrong now, but the primitive doesn't use it.
-    CryptoPrimitives::sss_share_reconstruct((uint8_t*) reconstruct, sizeof(reconstruct), ourShares[2], sizeof(ourShares), (const uint8_t) THRESHOLD);
+    // // SSS tests
+    // // Construct N shares at threshold T
+    // CryptoPrimitives::sss_share_gen(*ourShares, sizeof(ourShares), (uint8_t*) secret, (const uint8_t) NUM_SHARES, (const uint8_t) THRESHOLD); 
+    // // Reconstruct from shares 3-5. Obviously the shares size is wrong now, but the primitive doesn't use it.
+    // CryptoPrimitives::sss_share_reconstruct((uint8_t*) reconstruct, sizeof(reconstruct), ourShares[2], sizeof(ourShares), (const uint8_t) THRESHOLD);
 
-    std::cout << "\nSSS test....\nReconstructed:" << reconstruct << std::endl;
+    // std::cout << "\nSSS test....\nReconstructed:" << reconstruct << std::endl;
 
 
     // TODO Protocol flow.
@@ -79,18 +79,31 @@ int main(int argc, char *argv[]){
     After initial dispatch phase is over, KH may destroy all data, including polynomials.
 
     */
-    
-    KeyHolder kh(100,10,100,3);
 
-    Participant p1, p2, p3, p4, p5;
+    uint8_t num_participants = 100;
+    uint64_t coords_size = 100;
+    uint8_t max_rounds = 10;
+    uint8_t threshold = 3;
+
+    // init keyholder
+    KeyHolder kh(coords_size,num_participants,max_rounds,threshold);
+
+    // Participant p1, p2, p3, p4, p5;
+    // p1.init_data(&kh);
+    // p2.init_data(&kh);
+    // p3.init_data(&kh);
+    // p4.init_data(&kh);
+    // p5.init_data(&kh);
+
+    std::vector<Participant> partList;
+    for (int i = 0; i < num_participants; ++i) {
+        Participant p;
+        p.init_data(&kh);
+        partList.push_back(p);
+    }
+
+
     Reconstructor r;
-
-    p1.init_data(&kh);
-    p2.init_data(&kh);
-    p3.init_data(&kh);
-    p4.init_data(&kh);
-    p5.init_data(&kh);
-
     r.init_data(&kh);
 
     /*
@@ -113,20 +126,19 @@ int main(int argc, char *argv[]){
 
     // Keep in mind fully random exploration per-step != 100 distinct coordinates!
     // TODO also for final section: offer informed exploration.
-    p1.explore(30);
-    p2.explore(30);
-    p3.explore(30);
-    p4.explore(30);
-    p5.explore(30);
 
-    p1.send_round_shares(&r);
-    p2.send_round_shares(&r);
-    p3.send_round_shares(&r);
-    p4.send_round_shares(&r);
-    p5.send_round_shares(&r);
-
-    r.reconstruct_round();
-
+    for (int round = 0; round < max_rounds; ++round){
+        for (int i = 0; i < num_participants; ++i) {
+            partList[i].explore(1);
+            partList[i].send_round_shares(&r);
+        }
+        r.reconstruct_round();
+        
+        std::cout << "Round" << round << "PSI (size="<<r.get_psi().size()<<"):" << std::endl;
+        for (int value : r.get_psi()) {
+            std::cout << value << " ";
+        }
+        std::cout << "\n";
     /*
     PHASE 3: HANDOVER
     After completing the PSI evaluation, the reconstructor:
@@ -139,12 +151,14 @@ int main(int argc, char *argv[]){
     - Based on current location, select likely candidates to explore during next round. This can be local exploration, or any other strategy.
     - This strategy is developed independently by each member.
     */
+        for (int i = 0; i < num_participants; ++i) {
+            partList[i].update_confirmed(r.get_psi());
+        }
 
-    std::cout << "End of round PSI:" << std::endl;
-    for (int value : r.get_psi()) {
-        std::cout << value << " ";
     }
-    std::cout << "\n";
+
+
+
 
 
     } catch (const std::exception& e) {
