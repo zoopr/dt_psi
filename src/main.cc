@@ -149,7 +149,7 @@ int main(int argc, char *argv[]){
 
     uint8_t max_rounds = 10; // No real point variating this except for demonstrating short circuit efficiency in low convergence scenarios.
 
-    for (uint8_t threshold = 2; threshold < 6; threshold++){
+    for (uint8_t threshold = 2; threshold < 5; threshold++){
         for (uint64_t coords_size = 100; coords_size < 10000; coords_size *= 10){
             for (int num_participants = 3; num_participants < 256; num_participants = (num_participants+1) *2 - 1) { // We want to test up to 255 but for condition gets funky around int limit. Easier like this.
                 std::cout<<"Starting experiment N="<<num_participants<<",L="<<coords_size<<",Rmax="<<(int)max_rounds<<",T="<<(int)threshold<<std::endl;
