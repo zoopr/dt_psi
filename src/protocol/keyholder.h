@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <vector>
 #include <array>
+#include <chrono>
 
 extern "C" {
     #include <sss.h>
@@ -29,12 +30,15 @@ private:
     uint8_t common_salt[SALT_LEN] = {0,}; 
     uint8_t last_served;
 
+    std::vector<std::chrono::duration<double>> proto_init_timings;
 public:
     KeyHolder(const uint64_t coords, const uint8_t max_parties, const uint8_t max_rounds, const uint8_t threshold);
 
     bool serve_participant(participant_proto_data_t* in);
 
     bool serve_reconstructor(reconstructor_proto_data_t* in);
+
+    void print_stats();
 };
 
 #endif

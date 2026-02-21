@@ -4,6 +4,7 @@
 #include <vector>
 #include <array>
 #include <set>
+#include <chrono>
 
 #include "crypto/crypto_types.h"
 #include "protocol/keyholder.h"
@@ -17,7 +18,9 @@ private:
     reconstructor_proto_data_t params;
     uint64_t current_round = 0;
     std::vector<std::vector<cpp_share>> current_share_table;
-    std::set<uint64_t> current_psi;    
+    std::set<uint64_t> current_psi;
+    std::vector<std::chrono::duration<double>> row_dec_timings;
+    std::vector<std::chrono::duration<double>> reconstruction_timings; 
 public:
     bool init_data(KeyHolder* kh);
 
@@ -26,6 +29,8 @@ public:
     void reconstruct_round(); // TODO combinatory subgroups + SSS reconstruction on known value.
 
     std::set<uint64_t> get_psi();
+
+    void print_stats();
 };
 
 #endif

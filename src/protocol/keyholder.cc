@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <cstring>
 #include <iostream>
+#include <numeric>
 
 #include <openssl/rand.h>
 
@@ -12,6 +13,8 @@
 KeyHolder::KeyHolder(const uint64_t coords, const uint8_t max_parties, const uint8_t max_rounds, const uint8_t threshold)
 :     polymatrix(max_rounds*coords*max_parties), last_served(max_parties), max_coords(coords), max_parties(max_parties), max_rounds(max_rounds), threshold(threshold)
 {
+    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+
     // Initialize internal structures for operation
 
     // Create coords * max_rounds polynomials, generating shares via CryptoPrimitives::sss_gen()
@@ -41,8 +44,8 @@ KeyHolder::KeyHolder(const uint64_t coords, const uint8_t max_parties, const uin
     // Generate public-private key pair for the reconstructor. X25519 ok?
     CryptoPrimitives::x25519_keypair(r_pub, r_priv);
 
-    // In theory we could setup the parameters for the KDF here. In practice, with shared secrets coming from X25519 keypairs, salt is superfluous.
-
+    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+    proto_init_timings.push_back(std::chrono::duration_cast<std::chrono::duration<double>>(end-start));
 }
 
 bool KeyHolder::serve_participant(participant_proto_data_t *in)
@@ -76,7 +79,7 @@ bool KeyHolder::serve_participant(participant_proto_data_t *in)
         }
     }
     --last_served;
-    std::cout << "Served one participant." << std::endl; 
+    // std::cout << "Served one participant." << std::endl; 
     return true;
 }
 
@@ -90,4 +93,12 @@ bool KeyHolder::serve_reconstructor(reconstructor_proto_data_t *in)
     std::memcpy(in->kG,kg,KG_LEN);
     std::memcpy(in->reconstructor_privkey,r_priv,REC_KEY_LEN);
     return true;
+}
+
+void KeyHolder::print_stats()
+{
+    // Share and parameter generation
+    auto const count = static_cast<float>(proto_init_timings.size());
+    std::cout << "Precomputing params average:" << ((std::reduce(proto_init_timings.begin(), proto_init_timings.end())) / count).count() <<std::endl;
+    proto_init_timings.clear();
 }

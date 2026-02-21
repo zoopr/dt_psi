@@ -3,6 +3,7 @@
 #include <vector>
 #include <cstring>
 #include <iostream>
+#include <numeric>
 
 
 #include "crypto/crypto_primitives.h"
@@ -15,6 +16,7 @@ bool Participant::init_data(KeyHolder *kh)
 
 void Participant::explore(uint64_t steps)
 {
+    if (steps <= 0) return;
     std::set<uint64_t> not_needed;
     std::set_union(explored.begin(), explored.end(),
         confirmed.begin(), confirmed.end(),
@@ -23,23 +25,24 @@ void Participant::explore(uint64_t steps)
     // Better to sample from the complementary set.
     // For now this is ok, because we're not timing the actual exploration algorithms.
     if (not_needed.size() == params.coord_range){
-        std::cout << "Nothing left to explore! Rest of the algo should be short circuiting." <<std::endl;
+        // std::cout << "Nothing left to explore! Rest of the algo should be short circuiting." <<std::endl;
         return;
     }
-    for(uint64_t i = 0; i<steps; ++i) {
-        uint64_t cand;
-        do {
-            cand = CryptoPrimitives::secure_random_uint64(params.coord_range);
-            // std::cout << "DEBUG: precise cand cnt: " <<explored.count(cand)<<","<< confirmed.count(cand)<<std::endl;           
-        }
-        while(not_needed.count(cand));
-        explored.insert(cand);
-        // std::cout << "DEBUG inserted "<<cand<<"into participant."<<std::endl;
+    uint64_t cand;
+    do {
+        cand = CryptoPrimitives::secure_random_uint64(params.coord_range);
+        // std::cout << "DEBUG: precise cand cnt: " <<explored.count(cand)<<","<< confirmed.count(cand)<<std::endl;           
     }
+    while(not_needed.count(cand));
+    explored.insert(cand);
+    // std::cout << "DEBUG inserted "<<cand<<"into participant."<<std::endl;
+    return explore(steps-1);
 }
 
 bool Participant::send_round_shares(Reconstructor *r)
 {
+    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+
     // Construct Ei from edge subset (explored coordinates which weren't part of last PSI)
     std::set<uint64_t> frontier;
     std::set_difference(
@@ -107,6 +110,10 @@ bool Participant::send_round_shares(Reconstructor *r)
     }
     std::memcpy(final_c.data()+C_i.size(),hmac_tag.data(),32);
 
+    
+    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+    row_enc_timings.push_back(std::chrono::duration_cast<std::chrono::duration<double>>(end-start));
+
     r->decrypt_row(final_c.data(), final_c.size());
 
     current_round += 1;
@@ -116,5 +123,15 @@ bool Participant::send_round_shares(Reconstructor *r)
 
 void Participant::update_confirmed(std::set<uint64_t> last_PSI)
 {
-    confirmed = last_PSI;
+    if (last_PSI.size())
+        confirmed = last_PSI;
+}
+
+void Participant::print_stats()
+{
+    // Row encryption stats
+    
+    auto const count = static_cast<float>(row_enc_timings.size());
+    std::cout << "Row encryption average:" << ((std::reduce(row_enc_timings.begin(), row_enc_timings.end())) / count).count() <<std::endl;
+    row_enc_timings.clear();
 }

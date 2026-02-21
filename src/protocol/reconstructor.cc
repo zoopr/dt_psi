@@ -2,6 +2,8 @@
 #include <cstring>
 #include <stdexcept>
 #include <iostream>
+#include <numeric>
+#include <omp.h>
 
 #include "crypto/crypto_primitives.h"
 #include "reconstructor.h"
@@ -13,6 +15,7 @@ bool Reconstructor::init_data(KeyHolder *kh)
 
 bool Reconstructor::decrypt_row(uint8_t *in, size_t in_len)
 {
+    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
     // TODO
     // See paper protocol for precise implementation details.
 
@@ -88,6 +91,8 @@ bool Reconstructor::decrypt_row(uint8_t *in, size_t in_len)
     current_share_table.push_back(ei);
     // std::cout << "Decryption successful. Current Reconstructor rows: "<< current_share_table.size() << std::endl;
 
+    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+    row_dec_timings.push_back(std::chrono::duration_cast<std::chrono::duration<double>>(end-start));
     return true;
 }
 
@@ -99,8 +104,14 @@ void Reconstructor::reconstruct_round()
     uint8_t msgbuf[sss_MLEN] = {0,};
     uint8_t outbuf[sss_MLEN] = {0,};
 
+    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+
+    std::vector<bool> coord_confirm(params.coord_range);
+
+    #pragma omp parallel for
     for (uint64_t coord = 0; coord < params.coord_range; coord++) {
         // TODO Create permutations of collected shares
+        if (current_psi.count(coord)) continue;
         
         std::vector<cpp_share> rowshares(current_share_table.size());
         for(int i = 0; i < current_share_table.size(); i++){
@@ -125,19 +136,40 @@ void Reconstructor::reconstruct_round()
             // If decryption is successful and the shared secret matches the expected result:
             if (CryptoPrimitives::secure_compare(msgbuf,outbuf,msglen)) {
                 // DEBUG. Remove on high permutation count, obviously!
-                current_psi.insert(coord);
+                coord_confirm[coord] = true;
                 break; // Short circuit for this coordinate. This will be a break when we have an actual loop for permutations.
             } else {
                 // std::cout << "Row reconstruction failed. \nReported value:" << (char*)outbuf <<" Actual Value:"<<(char*) msgbuf<< std::endl;
             }
         }
+        coord_confirm[coord] = false;
     }
+    for (uint64_t coord = 0; coord < params.coord_range; coord++) {
+        if (coord_confirm[coord]) current_psi.insert(coord);
+    }
+    
+    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+    reconstruction_timings.push_back(std::chrono::duration_cast<std::chrono::duration<double>>(end-start));
     // Finally, erase contents of share-matrix and start new round.
     current_share_table.clear();
     current_round++;
+
 }
 
 std::set<uint64_t> Reconstructor::get_psi()
 {
     return current_psi;
+}
+
+void Reconstructor::print_stats()
+{
+    // Row decrypt
+    auto count = static_cast<float>(row_dec_timings.size());
+    std::cout << "Row decryption average:" << ((std::reduce(row_dec_timings.begin(), row_dec_timings.end())) / count).count() <<std::endl;
+    // Round reconstruction
+    count = static_cast<float>(reconstruction_timings.size());
+    std::cout << "Matrix reconstruction average:" << ((std::reduce(reconstruction_timings.begin(), reconstruction_timings.end())) / count).count() <<std::endl;
+
+    row_dec_timings.clear();
+    reconstruction_timings.clear();
 }

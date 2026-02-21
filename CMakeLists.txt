@@ -11,6 +11,9 @@ add_compile_options(
     -fno-omit-frame-pointer
 )
 
+find_package(OpenMP REQUIRED)
+
+
 add_subdirectory(vendor/boringssl)
 
 add_subdirectory(vendor/sss)
@@ -34,6 +37,7 @@ target_link_libraries(maincrypto
         crypto
         ssl
         sss
+        OpenMP::OpenMP_CXX
 )
 
 add_executable(app src/main.cc)
