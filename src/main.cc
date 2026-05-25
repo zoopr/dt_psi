@@ -80,12 +80,12 @@ void base_experiment(uint8_t num_participants, uint64_t coords_size, uint8_t max
 
     for (int round = 0; round < max_rounds; ++round){
         for (int i = 0; i < num_participants; ++i) {
-            partList[i].explore(1);
+            // partList[i].explore(coords_size/100); // We must test reconstruction without short circuits, the easiest way is full-dummy rows.
             partList[i].send_round_shares(&r);
         }
         r.reconstruct_round();
         
-        std::cout << "Round " << round << " PSI size="<<r.get_psi().size()<<std::endl;
+        // std::cout << "Round " << round << " PSI size="<<r.get_psi().size()<<std::endl;
     /*
     PHASE 3: HANDOVER
     After completing the PSI evaluation, the reconstructor:
@@ -94,7 +94,7 @@ void base_experiment(uint8_t num_participants, uint64_t coords_size, uint8_t max
 
     When receiving the PSI broadcast, each participant:
     - Creates the TO_EXPLORE coordinate subset by intersecting complement of EXPLORED with complement of PSI.
-    - Updates a different subset DONOT_SHARE which is the union of TO_EXPLORE and PSI. Essentially, sharing already confirmed coords opens us to differential attacks.
+    - Updates a different subset DONOT_SHARE which is the union of TO_EXPLORE and PSI (so the subtraction of PSI from EXPLORED). Essentially, sharing already confirmed coords opens us to differential attacks.
     - Based on current location, select likely candidates to explore during next round. This can be local exploration, or any other strategy.
     - This strategy is developed independently by each member.
     */
@@ -105,7 +105,6 @@ void base_experiment(uint8_t num_participants, uint64_t coords_size, uint8_t max
         // Print stats.
         partList[0].print_stats();
         r.print_stats();
-
     }
 }
 
@@ -142,17 +141,18 @@ int main(int argc, char *argv[]){
     // CryptoPrimitives::sss_share_reconstruct((uint8_t*) reconstruct, sizeof(reconstruct), ourShares[2], sizeof(ourShares), (const uint8_t) THRESHOLD);
 
     // std::cout << "\nSSS test....\nReconstructed:" << reconstruct << std::endl;
-
-
-    // TODO Protocol flow.
     try { 
 
-    uint8_t max_rounds = 10; // No real point variating this except for demonstrating short circuit efficiency in low convergence scenarios.
+    uint8_t max_rounds = 1; // No real point variating this except for demonstrating short circuit efficiency in low convergence scenarios.
 
-    for (uint8_t threshold = 2; threshold < 5; threshold++){
-        for (uint64_t coords_size = 100; coords_size < 10000; coords_size *= 10){
-            for (int num_participants = 3; num_participants < 256; num_participants = (num_participants+1) *2 - 1) { // We want to test up to 255 but for condition gets funky around int limit. Easier like this.
-                std::cout<<"Starting experiment N="<<num_participants<<",L="<<coords_size<<",Rmax="<<(int)max_rounds<<",T="<<(int)threshold<<std::endl;
+    // Base experiment single run to init a bunch of timed stuff.
+    base_experiment(3,100,1,2);
+    base_experiment(3,100,1,2);
+
+    for (uint64_t coords_size = 1000; coords_size < 2000; coords_size *= 4){
+        for (int num_participants = 7; num_participants < 128; num_participants = (num_participants+1) *2 - 1) { // We want to be able to test up to 255 but for condition gets funky around uint8 limit. Easier like this.
+            for (uint8_t threshold = 2; threshold < 5; threshold++){
+                std::cout<<"# Starting experiment N,L,Rmax,T:"<<num_participants<<","<<coords_size<<","<<(int)max_rounds<<","<<(int)threshold<<std::endl;
                 base_experiment((uint8_t)num_participants, coords_size, max_rounds, threshold);
             }
         }

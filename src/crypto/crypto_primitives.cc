@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 #include <iostream>
+#include <cmath>
+#include <numeric>
 
 #include <openssl/aead.h>
 #include <openssl/curve25519.h>
@@ -164,6 +166,25 @@ bool CryptoPrimitives::secure_compare(uint8_t *b1, uint8_t *b2, size_t len)
 {
     // Returns true on exact match up to len.
     return !CRYPTO_memcmp(b1, b2, len);
+}
+
+void CryptoPrimitives::print_stats(std::vector<std::chrono::duration<double>> timings, std::string name)
+{
+    using Duration = std::chrono::duration<double>;
+
+    Duration mean,stddev;
+
+    if (timings.empty()) {
+        mean = Duration{0};
+        stddev = Duration{0};
+    } else {
+        Duration sum = std::reduce(timings.begin(), timings.end());
+        mean = sum / timings.size();
+        stddev = Duration{std::accumulate(timings.begin(), timings.end(), 0.0, [mean](double acc, const Duration& s){return acc + (std::pow((s-mean).count(),2));})}/ timings.size();
+    }
+
+    std::cout << name << " average:" << mean.count() <<std::endl;
+    std::cout << name << " variance:" << stddev.count() <<std::endl;
 }
 
 CombinationGen::CombinationGen(uint64_t min, uint64_t max, size_t k)

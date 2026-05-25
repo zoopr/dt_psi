@@ -14,7 +14,7 @@ private:
     uint64_t current_round = 0;
     std::set<uint64_t> explored;
     std::set<uint64_t> confirmed;
-    std::vector<std::chrono::duration<double>> row_enc_timings;
+    inline static std::vector<std::chrono::duration<double>> row_enc_timings{};
 
 public:
     bool init_data(KeyHolder* kh);

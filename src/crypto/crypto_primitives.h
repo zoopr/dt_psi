@@ -6,6 +6,7 @@
 #include <vector>
 #include <set>
 #include <optional>
+#include <chrono>
 
 #include "crypto_types.h"
 
@@ -35,6 +36,8 @@ public:
     static void gen_dummy(uint8_t *out, size_t out_len);
 
     static bool secure_compare(uint8_t* b1, uint8_t* b2, size_t len);
+
+    static void print_stats(std::vector<std::chrono::duration<double>> timings, std::string name);
 };
 
 class CombinationGen {

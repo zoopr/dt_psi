@@ -114,6 +114,10 @@ bool Participant::send_round_shares(Reconstructor *r)
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
     row_enc_timings.push_back(std::chrono::duration_cast<std::chrono::duration<double>>(end-start));
 
+    // DEBUG: Print packet sizes in participant processing
+    // std::cout<<"\n  share bytes: "<<sizeof(cpp_share)<<"\n  share row "<<ei.size()<<"\n  encrypted ciphertext size:"<<c_sym.size()\
+    // <<"\n  pre-MAC payload size:"<<C_i.size()<<"\n  final packet size:"<<final_c.size()<<std::endl;
+
     r->decrypt_row(final_c.data(), final_c.size());
 
     current_round += 1;
@@ -129,9 +133,7 @@ void Participant::update_confirmed(std::set<uint64_t> last_PSI)
 
 void Participant::print_stats()
 {
-    // Row encryption stats
-    
-    auto const count = static_cast<float>(row_enc_timings.size());
-    std::cout << "Row encryption average:" << ((std::reduce(row_enc_timings.begin(), row_enc_timings.end())) / count).count() <<std::endl;
+    CryptoPrimitives::print_stats(row_enc_timings, "Row encryption");
+
     row_enc_timings.clear();
 }

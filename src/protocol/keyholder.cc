@@ -97,8 +97,7 @@ bool KeyHolder::serve_reconstructor(reconstructor_proto_data_t *in)
 
 void KeyHolder::print_stats()
 {
-    // Share and parameter generation
-    auto const count = static_cast<float>(proto_init_timings.size());
-    std::cout << "Precomputing params average:" << ((std::reduce(proto_init_timings.begin(), proto_init_timings.end())) / count).count() <<std::endl;
+    CryptoPrimitives::print_stats(proto_init_timings, "Protocol initialization");
+
     proto_init_timings.clear();
 }

@@ -102,10 +102,10 @@ void Reconstructor::reconstruct_round()
     // For each coordinate not in the confirmed PSI:
     uint8_t msgbuf[sss_MLEN] = {0,};
     uint8_t outbuf[sss_MLEN] = {0,};
-
-    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+    std::chrono::high_resolution_clock::time_point start,end;
 
     for (uint64_t coord = 0; coord < params.coord_range; coord++) {
+        start = std::chrono::high_resolution_clock::now();
         // Short circuit if we have previously PSI'd this coordinate.
         if (current_psi.count(coord)) continue;
         
@@ -132,10 +132,10 @@ void Reconstructor::reconstruct_round()
             } else {
                 // std::cout << "Row reconstruction failed. \nReported value:" << (char*)outbuf <<" Actual Value:"<<(char*) msgbuf<< std::endl;
             }
-        }
+        }    
+        end = std::chrono::high_resolution_clock::now();
+        reconstruction_timings.push_back(std::chrono::duration_cast<std::chrono::duration<double>>(end-start));
     }
-    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
-    reconstruction_timings.push_back(std::chrono::duration_cast<std::chrono::duration<double>>(end-start));
     // Finally, erase contents of share-matrix and start new round.
     current_share_table.clear();
     current_round++;
@@ -149,12 +149,8 @@ std::set<uint64_t> Reconstructor::get_psi()
 
 void Reconstructor::print_stats()
 {
-    // Row decrypt
-    auto count = static_cast<float>(row_dec_timings.size());
-    std::cout << "Row decryption average:" << ((std::reduce(row_dec_timings.begin(), row_dec_timings.end())) / count).count() <<std::endl;
-    // Round reconstruction
-    count = static_cast<float>(reconstruction_timings.size());
-    std::cout << "Matrix reconstruction average:" << ((std::reduce(reconstruction_timings.begin(), reconstruction_timings.end())) / count).count() <<std::endl;
+    CryptoPrimitives::print_stats(row_dec_timings, "Row decryption");
+    CryptoPrimitives::print_stats(reconstruction_timings, "Reconstruction");
 
     row_dec_timings.clear();
     reconstruction_timings.clear();
