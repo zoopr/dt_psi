@@ -172,19 +172,19 @@ void CryptoPrimitives::print_stats(std::vector<std::chrono::duration<double>> ti
 {
     using Duration = std::chrono::duration<double>;
 
-    Duration mean,stddev;
+    Duration mean,var;
 
     if (timings.empty()) {
         mean = Duration{0};
-        stddev = Duration{0};
+        var = Duration{0};
     } else {
         Duration sum = std::reduce(timings.begin(), timings.end());
         mean = sum / timings.size();
-        stddev = Duration{std::accumulate(timings.begin(), timings.end(), 0.0, [mean](double acc, const Duration& s){return acc + (std::pow((s-mean).count(),2));})}/ timings.size();
+        var = Duration{std::accumulate(timings.begin(), timings.end(), 0.0, [mean](double acc, const Duration& s){return acc + (std::pow((s-mean).count(),2));})}/ timings.size();
     }
 
     std::cout << name << " average:" << mean.count() <<std::endl;
-    std::cout << name << " variance:" << stddev.count() <<std::endl;
+    std::cout << name << " variance:" << var.count() <<std::endl;
 }
 
 CombinationGen::CombinationGen(uint64_t min, uint64_t max, size_t k)
