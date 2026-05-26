@@ -185,6 +185,8 @@ void CryptoPrimitives::print_stats(std::vector<std::chrono::duration<double>> ti
 
     std::cout << name << " average:" << mean.count() <<std::endl;
     std::cout << name << " variance:" << var.count() <<std::endl;
+    std::cout << name << " std dev:" << std::sqrt(var.count()) << " ("<< 100*std::sqrt(var.count())/mean.count()  <<"%)"<<std::endl;
+    
 }
 
 CombinationGen::CombinationGen(uint64_t min, uint64_t max, size_t k)

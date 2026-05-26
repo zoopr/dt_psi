@@ -19,8 +19,8 @@ private:
     uint64_t current_round = 0;
     std::vector<std::vector<cpp_share>> current_share_table;
     std::set<uint64_t> current_psi;
-    std::vector<std::chrono::duration<double>> row_dec_timings;
-    std::vector<std::chrono::duration<double>> reconstruction_timings; 
+    inline static std::vector<std::chrono::duration<double>> row_dec_timings;
+    inline static std::vector<std::chrono::duration<double>> reconstruction_timings; 
 public:
     bool init_data(KeyHolder* kh);
 

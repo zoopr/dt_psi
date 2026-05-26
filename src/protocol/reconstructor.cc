@@ -14,31 +14,51 @@ bool Reconstructor::init_data(KeyHolder *kh)
 
 bool Reconstructor::decrypt_row(uint8_t *in, size_t in_len)
 {
-    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
-    // TODO
+    std::chrono::high_resolution_clock::time_point start, end;
     // See paper protocol for precise implementation details.
+    
+    std::array<uint8_t, 32> reported_tag; // Could be 32, but we are forcing compatibility with Sha512 if we want to use it.
+    std::array<uint8_t, 64> hmac_tag; // Could be 32, but we are forcing compatibility with Sha512 if we want to use it.
+    size_t tag_len = 32; // Hardcoded because of our use of sha256. TODO: move to KH-defined params as in the paper!
+    
+    size_t Ci_len = in_len-tag_len;
+    std::vector<uint8_t> C_i(Ci_len);    
+    
+    std::array<uint8_t, 12> produced_nonce;
+
+    uint8_t mac_key[32];
+    uint8_t eph_pub[32],ss[32],roundkey[32];
+    uint64_t current_round_received;
+
+    // Only the (slightly) variable size ciphertext is left.
+    size_t csym_size = Ci_len-(sizeof(eph_pub)+produced_nonce.size()+sizeof(current_round_received));
+    size_t csym_off = sizeof(eph_pub)+produced_nonce.size();
+    std::vector<uint8_t> C_sym(csym_size);
+
+    std::vector<uint8_t> raw_ei(params.coord_range*sizeof(cpp_share));
+    std::vector<cpp_share> ei(params.coord_range);
+
+
+
+    start = std::chrono::high_resolution_clock::now();
+
 
     // Generate MAC key for tag retrieval.
     
     // std::cout << "Generate Reconstructor mac" << std::endl;
-    uint8_t mac_key[32];
     CryptoPrimitives::hkdf_sha256(mac_key,32,params.kG,32,0,0,(const uint8_t *)&current_round,sizeof(current_round));
     
     // Dissect ciphertext.
     
     // std::cout << "Dissect ciphertext" << std::endl;
-    std::array<uint8_t, 32> reported_tag; // Could be 32, but we are forcing compatibility with Sha512 if we want to use it.
-    size_t tag_len = 32; // Hardcoded because of our use of sha256. TODO: move to KH-defined params as in the paper!
-    size_t Ci_len = in_len-tag_len;
+
     // std::cout << "Expected ciphertext len: " <<Ci_len<< std::endl;
-    std::vector<uint8_t> C_i(Ci_len);
     std::memcpy(C_i.data(), in, Ci_len);
     std::memcpy(reported_tag.data(), in+Ci_len, tag_len);
     
     // Confirm HMAC
     
     // std::cout << "Confirm HMAC" << std::endl;
-    std::array<uint8_t, 64> hmac_tag; // Could be 32, but we are forcing compatibility with Sha512 if we want to use it.
     tag_len = 64; // For compatibility with max allowed SHA512. We will use Sha256, and this is reflected in dissection above.
     CryptoPrimitives::aes_hmac_tag(hmac_tag.data(),&tag_len,mac_key,sizeof(mac_key),C_i.data(),sizeof(C_i));
 
@@ -49,7 +69,6 @@ bool Reconstructor::decrypt_row(uint8_t *in, size_t in_len)
     }
     // Determine round key from given eph_pub + r_priv
     // KEM+AEAD encryption.
-    uint8_t eph_pub[32],ss[32],roundkey[32];
     // Ephemeral pubkey is at offset 0.
     std::memcpy(eph_pub, C_i.data(), 32);
     // Shared secret from eph private and Reconstructor pub
@@ -59,11 +78,9 @@ bool Reconstructor::decrypt_row(uint8_t *in, size_t in_len)
     // std::cout << "DEBUG roundkey rec: " << roundkey << std::endl;
     
     
-    std::array<uint8_t, 12> produced_nonce;
     // Nonce is second.
     std::memcpy(produced_nonce.data(), C_i.data()+sizeof(eph_pub), 12);
 
-    uint64_t current_round_received;
     std::memcpy(&current_round_received, C_i.data()+C_i.size()-sizeof(current_round_received), sizeof(current_round_received));
     // Check if we are synchronized!
     if (current_round_received != current_round) {
@@ -71,27 +88,26 @@ bool Reconstructor::decrypt_row(uint8_t *in, size_t in_len)
         return false;// TODO wipe matrix!
     }
 
-    // Only the (slightly) variable size ciphertext is left.
-    size_t csym_size = Ci_len-(sizeof(eph_pub)+produced_nonce.size()+sizeof(current_round_received));
-    size_t csym_off = sizeof(eph_pub)+produced_nonce.size();
-    std::vector<uint8_t> C_sym(csym_size);
+
     // Third member in C_i bufer.
     std::memcpy(C_sym.data(), C_i.data()+csym_off, csym_size);
     
     // Decrypt C_i based on received nonce and round key
-    std::vector<uint8_t> raw_ei(params.coord_range*sizeof(cpp_share));
     if (!CryptoPrimitives::aes_gcm_decrypt(&raw_ei,raw_ei.size()*sizeof(raw_ei[0]),C_sym.data(),csym_size,(const uint8_t *)&current_round,sizeof(current_round),roundkey,produced_nonce.data())){
         // std::cout << "Decryption unsuccessful! Skipping row..."<<std::endl;
         return false;
     }
     // Just for convenience, copy into proper vector of shares, then add to matrix.
-    std::vector<cpp_share> ei(params.coord_range);
     std::memcpy(ei.data()->data(),raw_ei.data(),params.coord_range*sizeof(cpp_share));
+    
+    end = std::chrono::high_resolution_clock::now();
+    row_dec_timings.push_back(std::chrono::duration_cast<std::chrono::duration<double>>(end-start));
+
+    std::cout << "Row decryption complete. Duration: " << std::chrono::duration_cast<std::chrono::duration<double>>(end-start).count() <<"s "<<std::endl;
+
     current_share_table.push_back(ei);
     // std::cout << "Decryption successful. Current Reconstructor rows: "<< current_share_table.size() << std::endl;
 
-    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
-    row_dec_timings.push_back(std::chrono::duration_cast<std::chrono::duration<double>>(end-start));
     return true;
 }
 

@@ -41,7 +41,8 @@ void Participant::explore(uint64_t steps)
 
 bool Participant::send_round_shares(Reconstructor *r)
 {
-    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+    std::chrono::high_resolution_clock::time_point start,end;
+    
 
     // Construct Ei from edge subset (explored coordinates which weren't part of last PSI)
     std::set<uint64_t> frontier;
@@ -52,6 +53,12 @@ bool Participant::send_round_shares(Reconstructor *r)
     );
     cpp_share tmp;
     std::vector<cpp_share> ei(params.coord_range);
+
+
+
+    start = std::chrono::high_resolution_clock::now();
+
+
     for (uint64_t i = 0; i < params.coord_range; i++) {
         if (frontier.find(i) != frontier.end()) {
             // If the index is in frontier, set legitimate share.
@@ -111,7 +118,7 @@ bool Participant::send_round_shares(Reconstructor *r)
     std::memcpy(final_c.data()+C_i.size(),hmac_tag.data(),32);
 
     
-    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+    end = std::chrono::high_resolution_clock::now();
     row_enc_timings.push_back(std::chrono::duration_cast<std::chrono::duration<double>>(end-start));
 
     // DEBUG: Print packet sizes in participant processing

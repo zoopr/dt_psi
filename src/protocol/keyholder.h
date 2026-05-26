@@ -30,7 +30,7 @@ private:
     uint8_t common_salt[SALT_LEN] = {0,}; 
     uint8_t last_served;
 
-    std::vector<std::chrono::duration<double>> proto_init_timings;
+    inline static std::vector<std::chrono::duration<double>> proto_init_timings;
 public:
     KeyHolder(const uint64_t coords, const uint8_t max_parties, const uint8_t max_rounds, const uint8_t threshold);
 
