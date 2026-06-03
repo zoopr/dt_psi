@@ -186,6 +186,7 @@ void CryptoPrimitives::print_stats(std::vector<std::chrono::duration<double>> ti
     std::cout << name << " average:" << mean.count() <<std::endl;
     std::cout << name << " variance:" << var.count() <<std::endl;
     std::cout << name << " std dev:" << std::sqrt(var.count()) << " ("<< 100*std::sqrt(var.count())/mean.count()  <<"%)"<<std::endl;
+    // std::cout << mean.count() << ") +- (0,"<< std::sqrt(var.count()) <<") % "<<100*std::sqrt(var.count())/mean.count()<<std::endl; // Latex plot helper
     
 }
 

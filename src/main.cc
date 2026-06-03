@@ -49,6 +49,7 @@ void base_experiment(uint8_t num_participants, uint64_t coords_size, uint8_t max
         KeyHolder kh(coords_size,num_participants,max_rounds,threshold);
     kh.print_stats();
 
+
     std::vector<Participant> partList;
     for (int i = 0; i < num_participants; ++i) {
         Participant p;
@@ -152,10 +153,13 @@ int main(int argc, char *argv[]){
     base_experiment(3,100,1,2);
     base_experiment(3,100,1,2);
 
-    for (uint64_t coords_size = 100; coords_size < 25601; coords_size *= 4){
-        for (int num_participants = 7; num_participants < 8; num_participants = (num_participants+1) *2 - 1) { // We want to be able to test up to 255 but for condition gets funky around uint8 limit. Easier like this.
-            for (uint8_t threshold = 2; threshold < 5; threshold++){
+    for (uint8_t threshold = 2; threshold < 8; threshold++) {
+        // std::cout <<"T="<< std::dec<<(int)threshold<< std::endl;
+        for (uint64_t coords_size = 10; coords_size < 11; coords_size *= 4){
+            for (int num_participants = 7; num_participants < 128; num_participants = (num_participants+1) *2 - 1) // We want to be able to test up to 255 but for condition gets funky around uint8 limit. Easier like this.
+            {
                 std::cout<<"# Starting experiment N,L,Rmax,T:"<<num_participants<<","<<coords_size<<","<<(int)max_rounds<<","<<(int)threshold<<std::endl;
+                // std::cout << "("<<num_participants+1<<",";
                 base_experiment((uint8_t)num_participants, coords_size, max_rounds, threshold);
             }
         }

@@ -103,7 +103,7 @@ bool Reconstructor::decrypt_row(uint8_t *in, size_t in_len)
     end = std::chrono::high_resolution_clock::now();
     row_dec_timings.push_back(std::chrono::duration_cast<std::chrono::duration<double>>(end-start));
 
-    std::cout << "Row decryption complete. Duration: " << std::chrono::duration_cast<std::chrono::duration<double>>(end-start).count() <<"s "<<std::endl;
+    // std::cout << "Row decryption complete. Duration: " << std::chrono::duration_cast<std::chrono::duration<double>>(end-start).count() <<"s "<<std::endl;
 
     current_share_table.push_back(ei);
     // std::cout << "Decryption successful. Current Reconstructor rows: "<< current_share_table.size() << std::endl;
@@ -120,12 +120,13 @@ void Reconstructor::reconstruct_round()
     uint8_t outbuf[sss_MLEN] = {0,};
     std::chrono::high_resolution_clock::time_point start,end;
 
+    std::vector<cpp_share> rowshares(current_share_table.size());
+
     for (uint64_t coord = 0; coord < params.coord_range; coord++) {
         start = std::chrono::high_resolution_clock::now();
         // Short circuit if we have previously PSI'd this coordinate.
         if (current_psi.count(coord)) continue;
         
-        std::vector<cpp_share> rowshares(current_share_table.size());
         for(int i = 0; i < current_share_table.size(); i++){
             rowshares[i] = current_share_table[i][coord];
         }
@@ -150,6 +151,9 @@ void Reconstructor::reconstruct_round()
             }
         }    
         end = std::chrono::high_resolution_clock::now();
+
+        // std::cout << "Reconstruction complete. Duration: " << std::chrono::duration_cast<std::chrono::duration<double>>(end-start).count() <<"s "<<std::endl;
+        
         reconstruction_timings.push_back(std::chrono::duration_cast<std::chrono::duration<double>>(end-start));
     }
     // Finally, erase contents of share-matrix and start new round.
