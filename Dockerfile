@@ -14,4 +14,5 @@ WORKDIR /home/ubuntu/dt_psi/build
 RUN cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
 RUN ninja
 
-CMD [ "./app" ]
+ENTRYPOINT [ "./app" ]
+CMD []

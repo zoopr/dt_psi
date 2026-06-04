@@ -1,8 +1,11 @@
 
+#include <cstdlib>
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
 #include <stdexcept>
+#include <string>
+
 
 
 #include <sss.h>
@@ -17,6 +20,13 @@
 // // Toy example macros, leave when done
 // #define NUM_SHARES 5
 // #define THRESHOLD 3
+#define MIN_THRESHOLD 2
+#define MIN_COORDS 10
+#define MIN_PARTICIPANTS 7
+
+#define MAX_THRESHOLD 8
+#define MAX_COORDS 10
+#define MAX_PARTICIPANTS 127
 
 void base_experiment(uint8_t num_participants, uint64_t coords_size, uint8_t max_rounds, uint8_t threshold){
         /*
@@ -149,14 +159,35 @@ int main(int argc, char *argv[]){
 
     uint8_t max_rounds = 1; // No real point variating this except for demonstrating short circuit efficiency in low convergence scenarios.
 
-    // Base experiment single run to init a bunch of timed stuff.
+    // Set to default macros, but allow external values.
+    int min_threshold=MIN_THRESHOLD,max_threshold=MAX_THRESHOLD;
+    int min_coords=MIN_COORDS,max_coords=MAX_COORDS;
+    int min_participants=MIN_PARTICIPANTS,max_participants=MAX_PARTICIPANTS;
+
+    // Allow external parameter ranges if available
+    if (argc > 1) {
+        // explicitly handle argc != 7, as we expect exactly 6 params
+        if (argc != 7){
+            std::cout<<"Usage: "<<argv[0]<<" [min_t max_t min_coord max_coord min_part max_part]"<<std::endl;
+            return -1;
+        }
+        // Other errors are handled by the try{}
+        min_threshold = std::stoi(argv[1]);
+        max_threshold = std::stoi(argv[2]);
+        min_coords = std::stoi(argv[3]);
+        max_coords = std::stoi(argv[4]);
+        min_participants = std::stoi(argv[5]);
+        max_participants = std::stoi(argv[6]);
+    }
+
+    // Base experiment single runs to init a bunch of lazy timed stuff.
     base_experiment(3,100,1,2);
     base_experiment(3,100,1,2);
 
-    for (uint8_t threshold = 2; threshold < 8; threshold++) {
+    for (uint8_t threshold = min_threshold; threshold <= max_threshold; threshold++) {
         // std::cout <<"T="<< std::dec<<(int)threshold<< std::endl;
-        for (uint64_t coords_size = 10; coords_size < 11; coords_size *= 4){
-            for (int num_participants = 7; num_participants < 128; num_participants = (num_participants+1) *2 - 1) // We want to be able to test up to 255 but for condition gets funky around uint8 limit. Easier like this.
+        for (uint64_t coords_size = min_coords; coords_size <= max_coords; coords_size *= 4){
+            for (int num_participants = min_participants; num_participants <= max_participants; num_participants = (num_participants+1) *2 - 1) // We want to be able to test up to 255 but for condition gets funky around uint8 limit. Easier like this.
             {
                 std::cout<<"# Starting experiment N,L,Rmax,T:"<<num_participants<<","<<coords_size<<","<<(int)max_rounds<<","<<(int)threshold<<std::endl;
                 // std::cout << "("<<num_participants+1<<",";
@@ -168,7 +199,7 @@ int main(int argc, char *argv[]){
 
     } catch (const std::exception& e) {
         std::cerr << "Main test failed: " << e.what() << std::endl;
-        return 1;
+        return -1;
     }
 
     return 0;
