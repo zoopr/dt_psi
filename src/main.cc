@@ -28,6 +28,8 @@
 #define MAX_COORDS 10
 #define MAX_PARTICIPANTS 127
 
+int shortcut = 0; // possible values: 0=full test, 1=init-only, 2=enc-dec only. 
+
 void base_experiment(uint8_t num_participants, uint64_t coords_size, uint8_t max_rounds, uint8_t threshold){
         /*
     Objectives: 
@@ -55,10 +57,13 @@ void base_experiment(uint8_t num_participants, uint64_t coords_size, uint8_t max
     */
 
     KeyHolder kh(coords_size,num_participants,max_rounds,threshold);
-    for (int i = 0; i<99; i++) // DEBUG/STAT: produce statistical average over 100 inits.
-        KeyHolder kh(coords_size,num_participants,max_rounds,threshold);
-    kh.print_stats();
 
+    if (shortcut == 0 || shortcut == 1) { // Reinitialize kh 100 times to produce param generation stats.
+        for (int i = 0; i<99; i++)
+            KeyHolder kh(coords_size,num_participants,max_rounds,threshold);
+        kh.print_stats();
+    }
+    if (shortcut == 1) return; // Short circuit to only test init
 
     std::vector<Participant> partList;
     for (int i = 0; i < num_participants; ++i) {
@@ -66,7 +71,6 @@ void base_experiment(uint8_t num_participants, uint64_t coords_size, uint8_t max
         p.init_data(&kh);
         partList.push_back(p);
     }
-
 
     Reconstructor r;
     r.init_data(&kh);
@@ -96,7 +100,16 @@ void base_experiment(uint8_t num_participants, uint64_t coords_size, uint8_t max
         for (int i = 0; i < num_participants; ++i) {
             // partList[i].explore(coords_size/100); // We must test reconstruction without short circuits, the easiest way is full-dummy rows.
             partList[i].send_round_shares(&r);
+            
         }
+        // If we only want to test row encryption and decryption (shortcut 2), print stats for both here, then short circuit.
+        // no need to do this for full tests (shortcut 0)
+        if (shortcut == 2) {
+            partList[0].print_stats();
+            r.print_stats(); // this will also print 0-length reconstruction. Not a big deal, but discard this information.
+            return;
+        }
+
         r.reconstruct_round();
         
         // std::cout << "Round " << round << " PSI size="<<r.get_psi().size()<<std::endl;
@@ -116,7 +129,7 @@ void base_experiment(uint8_t num_participants, uint64_t coords_size, uint8_t max
             partList[i].update_confirmed(r.get_psi());
         }
 
-        // Print stats.
+        // Print full stats.        
         partList[0].print_stats();
         r.print_stats();
     }
@@ -164,11 +177,12 @@ int main(int argc, char *argv[]){
     int min_coords=MIN_COORDS,max_coords=MAX_COORDS;
     int min_participants=MIN_PARTICIPANTS,max_participants=MAX_PARTICIPANTS;
 
+
     // Allow external parameter ranges if available
     if (argc > 1) {
-        // explicitly handle argc != 7, as we expect exactly 6 params
-        if (argc != 7){
-            std::cout<<"Usage: "<<argv[0]<<" [min_t max_t min_coord max_coord min_part max_part]"<<std::endl;
+        // explicitly handle argc != 8, as we expect exactly 7 params
+        if (argc != 8){
+            std::cout<<"Usage: "<<argv[0]<<" [min_t max_t min_coord max_coord min_part max_part shortcut]"<<std::endl;
             return -1;
         }
         // Other errors are handled by the try{}
@@ -178,6 +192,7 @@ int main(int argc, char *argv[]){
         max_coords = std::stoi(argv[4]);
         min_participants = std::stoi(argv[5]);
         max_participants = std::stoi(argv[6]);
+        shortcut = std::stoi(argv[7]);
     }
 
     // Base experiment single runs to init a bunch of lazy timed stuff.
