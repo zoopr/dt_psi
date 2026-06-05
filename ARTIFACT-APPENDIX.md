@@ -1,271 +1,211 @@
-# Artifact Appendix (Required for all badges)
+# Artifact Appendix 
 
-Paper title: **Enter the exact title of your PETS accepted paper here**
+Paper title: **When Drones Meet Privately: Secure Coordination with 𝑡-PSI**
 
 Requested Badge(s):
-  - [ ] **Available**
-  - [ ] **Functional**
-  - [ ] **Reproduced**
+  - [X] **Available**
+  - [X] **Functional**
+  - [X] **Reproduced**
 
-Authors can provide this content _either_ as a separate file in their artifact
-_or_ as part of their existing documentation (e.g., `README.md`). In the latter
-case, you should have the same section titles as in this template.
+## Description 
 
-This template includes several placeholders. When filling in this template for
-their artifact, the authors should:
+This artifact is related to the paper "When Drones Meet Privately: Secure Coordination with 𝑡-PSI"
+which was accepted into PETS2026.4
 
-1. Remove this note.
-2. Delete the sections that are _not_ required for the badge(s) they are
-   applying for.
-3. Omit suffixes of the form "(required/encouraged for badge ...)" from the
-   section titles.
-4. Authors should not leave the placeholder descriptions initially provided with
-   this file into the submitted version with their artifact.
+This artifact contains the reference implementation of the proposed algorithm. 
+It was used for the storage, bandwidth and computing time benchmarks reported inside the paper.
 
-While this template is provided for artifact review, you should write your
-instructions for someone trying to reuse your artifact in the future (i.e., not
-an artifact reviewer).
+### Security/Privacy Issues and Ethical Concerns 
 
-## Description (Required for all badges)
-Replace this with the following:
+This artifact does not contain malicious code, nor pose any security or privacy risk.
+It also does not include or process privacy-sensitive data. 
+The code is built and run inside a dedicated Docker container with no effect on the host system.
 
-1. List the paper that the artifact relates to (i.e., paper title, authors,
-   year, or even a BibTex cite).
-2. A short description of your artifact and how it is relevant to your paper.
+## Basic Requirements 
 
-### Security/Privacy Issues and Ethical Concerns (Required for all badges)
+### Hardware Requirements 
 
-Replace this with a description of security or privacy risks that your artifact
-may hold for the machine of the person trying to evaluate or reuse your
-artifact. This is especially relevant for artifacts that _disable a security
-mechanism_, such as a firewall, ASLR, etc., to demonstrate an attack, as well as
-to artifacts that _run vulnerable code_, such as exploits, malware samples,
-etc., to demonstrate a vulnerability.
+*Minimal Hardware Requirements.* No minimum requirement. 
 
-User study artifacts that include anonymized transcripts or survey responses
-should list the ethical review / IRB process followed to obtain participants'
-consent to publishing this anonymized dataset. They may also list how
-participants were compensated.
+All code was tested on two machines: 
+an MSI GF63 laptop, 
+running an Intel(R) Core(TM) i7-10750H CPU @ 2.60GHz 
+with 12 logical cores and 16 GB of RAM,
+and a Raspberry Pi 400, 
+with a Broadcom BCM2711 quad-core Cortex-A72 (ARM v8) 64-bit SoC @ 1.8GHz 
+and 4 GB of RAM.
 
-## Basic Requirements (Required for Functional and Reproduced badges)
+### Software Requirements 
 
-For both sections below, if you are giving reviewers remote access to special
-hardware (e.g., Intel SGX v2.0) or proprietary software (e.g., Matlab R2025a)
-for the purpose of the artifact evaluation, do not provide these instructions
-here but rather in the corresponding submission field on HotCRP.
+This code was tested on Ubuntu 24.04 as the host OS. 
+It requires the following APT packages:
+- `build-essential=12.10ubuntu1` 
+- `cmake=3.28.3-1build7` 
+- `ninja-build=1.11.1-2`
 
-### Hardware Requirements (Required for Functional and Reproduced badges)
 
-Replace this with the following:
+We provide a Docker image based on the `ubuntu:24.04` base image. 
+Package dependencies are frozen inside the Dockerfile.
+It was tested on the same host, with Docker version 28.4.0.
 
-1. A list of the _minimal hardware requirements_ to execute your artifact. If no
-   specific hardware is needed, then state "Can run on a laptop (No special
-   hardware requirements)". You may state how a researcher could gain access to
-   that hardware, e.g., by buying, renting, or even emulating it.
-2. When applying for the "Reproduced" badge, list _the specifications of the
-   hardware_ on which the experiments reported in the paper were performed. This
-   is especially relevant in cases were results might be influenced by the
-   hardware used (e.g., latency, bandwidth, throughput experiments, etc.).
+### Estimated Time and Storage Consumption 
 
-### Software Requirements (Required for Functional and Reproduced badges)
+Building the Docker image will require 10 minutes of compute time and 3 GB of disk space.
+Running the experiments with the default values will require roughly 48 hours of compute time 
+and less than 200MB of runtime memory.
 
-Replace this with the software required to run your artifact and its versions,
-as follows.
+## Environment 
 
-1. List the OS you used to run your artifact, along with its version (e.g.,
-   Ubuntu 22.04). If your artifact can only run on a specific OS or a specific
-   OS version, list it and explain why here. In general, your artifact reviewers
-   will probably have access to a machine with a different OS or different OS
-   version than yours; they should still be able to run appropriately packaged
-   artifacts.
-2. List the OS packages that your artifact requires, along with their versions.
-3. Artifact packaging: If you use a container runtime (e.g., Docker) to run the
-   artifact, list the container runtime and its version (e.g., Docker 23.0.3).
-   If you use VMs, list the hypervisor (e.g., VirtualBox) to run the artifact.
-4. List the programming language compiler or interpreter you used to run your
-   artifact (e.g., Python 3.13.7). Your Docker image or VM image should have
-   this version of the programming languages installed already. Your Dockerfile
-   should start from a base image with this programming language version.
-5. List packages that your artifact depends on, along with their versions. For
-   example, Python-based privacy-preserving machine learning artifacts typically
-   require `numpy`, `scipy`, etc. You may point to a file in your artifact with
-   this list, such as a `requirements.txt` file. If you rely on proprietary
-   software (e.g. Matlab R2025a), list this here and consider providing access
-   to reviewers through HotCRP.
-6. List any Machine Learning Models required to run your artifact, along with
-   their versions. If your model is hosted on a different repository, such as on
-   Zenodo, then your artifact should download it automatically (same for
-   datasets). If a required ML model is _not_ in your artifact, provide a dummy
-   model to demonstrate the functionality of the rest of your artifact.
-7. List any datasets required to run your artifact. If any required dataset is
-   not in your artifact, you should provide a synthetic dataset that showcases
-   the expected data format.
+### Accessibility 
 
-### Estimated Time and Storage Consumption (Required for Functional and Reproduced badges)
+The artifact repository is available on GitHub at [https://github.com/zoopr/dt_psi](https://github.com/zoopr/dt_psi).
 
-Replace the following with estimated values for:
+### Set up the environment 
 
-- The overall human and compute times required to run the artifact.
-- The overall disk space consumed by the artifact.
+We provide the script `run_all_tests.sh` to automate the building and testing process for the provided Docker image.
+The code can also built on a host with any C++ compiler, cmake and ninja, following the commands in the Dockerfile.
 
-This helps reviewers schedule the evaluation in their time plan and others in
-general to see if everything is running as intended. This should also be
-specified at a finer granularity for each experiment (see below).
+### Testing the Environment
 
-## Environment (Required for all badges)
+We recommend simply running a container via the included `run_all_tests.sh` scripts. 
+This will run all tests without the need for human interaction.
 
-In the following, describe how to access your artifact and all related and
-necessary data and software components. Afterward, describe how to set up
-everything and how to verify that everything is set up correctly.
-
-### Accessibility (Required for all badges)
-
-Replace the following by a description of how to access your artifact via
-persistent sources. Valid hosting options are institutional and third-party
-digital repositories (e.g., GitHub, Gitlab, BitBucket, Zenodo, Figshare, etc.).
-Please do not use personal web pages or cloud storage services like Google
-Drive, Dropbox, etc.
-
-Note that once your artifact evaluation is finalized and a badge decision has
-been made, artifact chairs will collect a stable and persistent reference to
-your artifact to list on the website. For version-controlled repositories (e.g.,
-Git repositories), this will be a specific commit-id or tag.
-
-You _should not_ link to a specific commit here at submission time, as changes
-will likely happen during the evaluation process to address the reviewers'
-feedback, resulting in the link being out-of-date. Instead, you may link to the
-latest commit in your branch (e.g. main) as follows:
-https://github.com/PoPETS-AEC/example-docker-python-pip/tree/main
-
-### Set up the environment (Required for Functional and Reproduced badges)
-
-Replace the following by a description of how one should set up the environment
-for your artifact, including downloading and installing dependencies and the
-installation of the artifact itself (i.e., from the very first download or clone
-command one should perform). Be as specific as possible here. If possible, use
-code segments to simplify the workflow, e.g.,
-
-```bash
-git clone git@github.com:PoPETS-AEC/example-docker-python-pip.git
-docker build -t example-docker-python-pip:main .
-```
-
-Describe the expected results where it makes sense to do so.
-
-### Testing the Environment (Required for Functional and Reproduced badges)
-
-Replace the following by a description of the basic functionality tests to check
-if the environment is set up correctly. These tests could be unit tests,
-training an ML model on very low training data, etc. If these tests succeed, all
-required software should be functioning correctly. Use code segments to simplify
-the workflow, e.g.,
-
-Launch the Docker container, attach the current working directory (i.e., run
-from the root of the cloned git repository) as a volume, set the context to be
-that volume, and provide an interactive bash terminal:
-
-```bash
-docker run --rm -it -v ${PWD}:/workspaces/example-docker-python-pip \
-    -w /workspaces/example-docker-python-pip \
-    --entrypoint bash example-docker-python-pip:main
-```
-
-Then within the Docker container, run:
-
-```bash
-./test.sh
-```
-
-Include the expected output.
-
-## Artifact Evaluation (Required for Functional and Reproduced badges)
-
-This section should include all the steps required to evaluate your artifact's
-functionality and validate your paper's key results and claims. Therefore,
-highlight your paper's main results and claims in the first subsection. And
-describe the experiments that support your claims in the subsection after that.
+## Artifact Evaluation 
 
 ### Main Results and Claims
 
-List all your paper's results and claims that are supported by your submitted
-artifacts.
+We provide this artifact as a sample implementation on worst-case runtime performance of our algorithm.
+We separate timing tests in 4 main areas: parameter initialization, row encryption, row decryption, and reconstruction.
+All test will provide average, variance, and standard deviation, both in absolute values and percentage of average runtime.
 
-#### Main Result 1: Name
+The `main()` function `in src/main.cc` handles the precise parametrization of each experiment in a nested for loop.
+Default parameter ranges are set via the macros `MIN_*` and `MAX_*` in the same source file. Custom parameter ranges can be set via positional arguments. 
 
-Describe the results in 1 to 3 sentences. Mention what the independent and
-dependent variables are; independent variables are the ones on the x-axes of
-your figures, whereas the dependent ones are on the y-axes. By varying the
-independent variable (e.g., file size) in a given manner (e.g., linearly), we
-expect to see trends in the dependent variable (e.g., runtime, communication
-overhead) vary in another manner (e.g., exponentially). Refer to the related
-sections, figures, and/or tables in your paper and reference the experiments
-that support this result/claim. See example below.
+You can run all tests required for our results sequentially by executing
 
-#### Main Result 2: Example Name
+```
+./run_all_tests.sh
+```
 
-Our paper claims that when varying the file size linearly, the runtime also
-increases linearly. This claim is reproducible by executing our
-[Experiment 2](#experiment-2-example-name). In this experiment, we change the
-file size linearly, from 2KB to 24KB, at intervals of 2KB each, and we show that
-the runtime also increases linearly, reaching at most 1ms. We report these
-results in "Figure 1a" and "Table 3" (Column 3 or Row 2) of our paper.
+We also provide a set of `run_docker_*.sh` scripts.
+These allow you to to produce the data required for each individual figure in the paper.
+
+#### Main Result 1: Parameter initialization
+
+Parameter initialization focuses on the scaling between threshold, number of participants, and computing time.
+We will describe the parametrization in [Experiment 1](#experiment-1-init). 
+Testing only the parameter initialization should require less than 10 minutes. 
+Runtime increases linearly over number of participants, scaling slightly in base value depending on threshold size.
+Internally, the code runs the initialization phase 100 times for each parameter combination.
+The expected timing results are presented in "Figure 1" of our paper.
+
+#### Main Result 2: Row Encryption and Decryption
+
+Row encryption and decryption focuses on the scaling between threshold, number of coordinates, and computing time.
+We will describe the parametrization in [Experiment 2](#experiment-2-encdec). 
+There should be no effect of threshold on final computing time.
+Time should scale linearly with number of coordinates. 
+"Figure 2" in the paper contains the timing results for both tests in its two subfigures.
+Row encryption was also tested on the Raspberry Pi 400. Timing results in "Figure 2a" of our paper refer to this separate testing hardware.
+
+#### Main Result 3: Reconstruction
+
+Reconstruction tests demonstrate the scaling between threshold, number of participants, and computing time.
+Computing time scales linearly with number of coordinates and exponentially with threshold. 
+We recommend a reduced testing set for the highest threshold setting considered.
+We will describe the exact parametrization in [Experiment 3](#experiment-3-reconstruction). 
+"Figure 3" in the paper contains the timing results per coordinate.
 
 ### Experiments
-List each experiment to execute to reproduce your results. Describe:
- - How to execute it in detailed steps.
- - What the expected result is.
- - How long it takes to execute in human and compute times (approximately).
- - How much space it consumes on disk (approximately) (omit if <10GB).
- - Which claim and results does it support, and how.
 
-#### Experiment 1: Name
-- Time: replace with estimate in human-minutes/hours + compute-minutes/hours.
-- Storage: replace with estimate for disk space used (omit if <10GB).
+To build and run all experiments sequentially, run 
 
-Provide a short explanation of the experiment and expected results. Describe
-thoroughly the steps to perform the experiment and to collect and organize the
-results as expected from your paper (see example below). Use code segments to
-simplify the workflow, as follows.
-
-```bash
-python3 experiment_1.py
+```
+./run_all_tests.sh
 ```
 
-#### Experiment 2: Example Name
+We also provide a number of scripts for testing each element separately. 
+These scripts all depend on the same docker image built by `build_docker.sh`. 
+Each experiment is given one or more scripts automatically passing the correct parameters to the test environment.
+For custom parameters, run `run_docker_generic.sh` passing the desired ranges. See the other scripts for the correct command line args.
 
-- Time: 10 human-minutes + 3 compute-hours
-- Storage: 20GB
+#### Experiment 1: Init
 
-This example experiment reproduces
-[Main Result 2: Example Name](#main-result-2-example-name), the following script
-will run the simulation automatically with the different parameters specified in
-the paper. (You may run the following command from the example Docker image.)
+Runtime: 10 compute minutes
 
-```bash
-python3 main.py
+To replicate the numbers in the paper, we suggest the following parameter range:
+- Threshold 2 to 7
+- Participants 7 to 128
+- Coordinates: 1000
+
+You can run Experiment 1 by running
+
+```
+./run_docker_init.sh
 ```
 
-Results from this example experiment will be aggregated over several iterations
-by the script and output directly in raw format along with variances and
-standard deviations in the `output-folder/` directory. You will also find there
-the plots for "Figure 1a" in `.pdf` format and the table for "Table 3" in `.tex`
-format. These can be directly compared to the results reported in the paper, and
-should not quantitatively vary by more than 5% from expected results.
+Text output directly on terminal should report average, variance, and standard deviation, including percentage of the average run.
+We manually input these results onto a `tikz` image into LaTeX.
+
+#### Experiment 2: Enc/Dec
+
+Runtime: 10 compute minutes
+
+To replicate the numbers in the paper, we suggest the following parameter range:
+- Threshold 2 to 5
+- Participants 100
+- Coordinates: 100 to 25600
+
+You can run Experiment 2 by running
+
+```
+./run_docker_encdec.sh
+```
+
+As before, terminal output should report average, variance, and standard deviation, including percentage of the average run.
+Note that this will also output zero-length Reconstruction data, which should be ignored.
+We manually input these results onto a `tikz` image into LaTeX. 
+
+To replicate the numbers in figure 2a, these tests should be run on the Raspberry Pi 400. 
+They should run about 7x slower. Expected runtime is slightly over 1 hour.
+
+#### Experiment 3: Reconstruction
+
+Runtime: 48 compute hours total
+
+We split this experiment in two batches to simplify result extraction for different complexities. 
+
+```
+./run_docker_full_lowt.sh
+```
+
+- Threshold 2 to 5
+- Participants 7 to 128
+- Coordinates: 100
+
+```
+./run_docker_full_t7.sh
+```
+
+- Threshold 7
+- Participants 7 to 128
+- Coordinates: 10
+
+Results are aggregated per coordinate processed. Timing stability in both sets at 127 participants should be below 2%.
+Terminal output should report average, variance, and standard deviation, including percentage of the average run.
+We manually input these results onto a `tikz` image into LaTeX. 
 
 
-## Limitations (Required for Functional and Reproduced badges)
+## Limitations 
 
-Describe which steps, experiments, results, graphs, tables, etc. are _not
-reproducible_ with the provided artifact. Explain why this is not
-included/possible and argue why the artifact should _still_ be evaluated for the
-respective badges.
+Generating the graphs still requires manual input into a `tikz` template. 
+We provide templates for each figure in the repository in the `figures/` folder.
 
-## Notes on Reusability (Encouraged for all badges)
+## Notes on Reusability 
 
-First, this section might not apply to your artifacts. Describe how your
-artifact can be used beyond your research paper, e.g., as a general framework.
-The overall goal of artifact evaluation is not only to reproduce and verify your
-research but also to help other researchers to re-use and extend your artifacts.
-Discuss how your artifacts can be adapted to other settings, e.g., more input
-dimensions, other datasets, and other behavior, through replacing individual
-modules and functionality or running more iterations of a specific module.
+The code can be included as a library in other projects as-is
+or can be further expanded and modified to be integrated into 
+practical applications or further experiments.
+Individual modules and other elements of the proposed protocol 
+can be adapted to process different data types, 
+or interface with different hardware devices' network stacks.

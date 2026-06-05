@@ -1,0 +1,91 @@
+\begin{tikzpicture}
+\begin{axis}[
+    width=7.5cm,
+    height=6.5cm,
+    %xmode=log,
+    %log basis x=10,
+    xlabel={Number of drones},
+    ylabel={Keyholder Initialization Time (s)},
+    yticklabel style={
+    /pgf/number format/fixed,
+    /pgf/number format/precision=4
+    },
+    scaled y ticks=false,
+    scaled y ticks=false,
+    legend pos=north west,
+    tick align=outside,
+    xtick={4,8,16,32,64,128},
+    grid=both,
+    xmajorgrids=false,
+]
+
+% Fake legend title
+\addlegendimage{empty legend}
+\addlegendentry{\textbf{threshold}}
+
+% Threshold 2
+\addplot+[error bars/.cd,
+        y dir=both,
+        y explicit] coordinates {
+(4,0.00337403) +- (0,0.000142741) % 4.23059
+(8,0.00380507) +- (0,0.000206764) % 5.43391
+(16,0.00450113) +- (0,0.000246813) % 5.48335
+(32,0.00605872) +- (0,0.000465726) % 7.68687
+(64,0.00836032) +- (0,0.00045631) % 5.45804
+(128,0.0135084) +- (0,0.000526888) % 3.90044
+};
+\addlegendentry{2}
+
+% Threshold 3
+\addplot+[error bars/.cd,
+        y dir=both,
+        y explicit] coordinates {
+(4,0.0041869) +- (0,0.000396615) % 9.47277
+(8,0.00458903) +- (0,0.00022273) % 4.85353
+(16,0.00542242) +- (0,0.000343307) % 6.33126
+(32,0.00726986) +- (0,0.000430858) % 5.92664
+(64,0.011057) +- (0,0.000503397) % 4.55276
+(128,0.0188154) +- (0,0.000738301) % 3.92392
+};
+\addlegendentry{3}
+
+% Threshold 4
+\addplot+[error bars/.cd,
+        y dir=both,
+        y explicit] coordinates {
+(4,0.00412714) +- (0,0.000136286) % 3.3022
+(8,0.00490728) +- (0,0.000244913) % 4.9908
+(16,0.00640666) +- (0,0.000593865) % 9.2695
+(32,0.00913067) +- (0,0.000347301) % 3.80367
+(64,0.0146678) +- (0,0.000728073) % 4.96375
+(128,0.0258144) +- (0,0.00113282) % 4.38831
+};
+\addlegendentry{4}
+
+% Threshold 5
+\addplot+[error bars/.cd,
+        y dir=both,
+        y explicit] coordinates {
+(8,0.00551408) +- (0,0.000284692) % 5.16301
+(16,0.00699605) +- (0,0.000213874) % 3.05707
+(32,0.0107754) +- (0,0.000972836) % 9.02831
+(64,0.0176647) +- (0,0.000597544) % 3.3827
+(128,0.0295603) +- (0,0.00141916) % 4.80088
+};
+\addlegendentry{5}
+
+
+% Threshold 7
+\addplot+[error bars/.cd,
+        y dir=both,
+        y explicit] coordinates {
+(8,0.00570588) +- (0,0.000286042) % 5.01311
+(16,0.00815837) +- (0,0.000792522) % 9.71421
+(32,0.0125397) +- (0,0.000464463) % 3.70395
+(64,0.0231929) +- (0,0.00142901) % 6.16139
+(128,0.040289) +- (0,0.00120587) % 2.99306
+};
+\addlegendentry{7}
+
+\end{axis}
+\end{tikzpicture}
