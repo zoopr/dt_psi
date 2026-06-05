@@ -62,13 +62,14 @@ The artifact repository is available on GitHub at [https://github.com/zoopr/dt_p
 
 ### Set up the environment 
 
-We provide the script `run_all_tests.sh` to automate the building and testing process for the provided Docker image.
+We provide the script `build_docker.sh` to automate the building process for the provided Docker image.
+
 The code can also built on a host with any C++ compiler, cmake and ninja, following the commands in the Dockerfile.
 
 ### Testing the Environment
 
-We recommend simply running a container via the included `run_all_tests.sh` scripts. 
-This will run all tests without the need for human interaction.
+We recommend simply running the first test via the included `run_docker_init.sh` script. 
+This will run the initialization test without the need for human interaction, terminating within 2 minutes.
 
 ## Artifact Evaluation 
 
@@ -131,12 +132,7 @@ For custom parameters, run `run_docker_generic.sh` passing the desired ranges. S
 
 #### Experiment 1: Init
 
-Runtime: 10 compute minutes
-
-To replicate the numbers in the paper, we suggest the following parameter range:
-- Threshold 2 to 7
-- Participants 7 to 128
-- Coordinates: 1000
+Runtime: 2 compute minutes
 
 You can run Experiment 1 by running
 
@@ -150,11 +146,6 @@ We manually input these results onto a `tikz` image into LaTeX.
 #### Experiment 2: Enc/Dec
 
 Runtime: 10 compute minutes
-
-To replicate the numbers in the paper, we suggest the following parameter range:
-- Threshold 2 to 5
-- Participants 100
-- Coordinates: 100 to 25600
 
 You can run Experiment 2 by running
 
@@ -171,25 +162,19 @@ They should run about 7x slower. Expected runtime is slightly over 1 hour.
 
 #### Experiment 3: Reconstruction
 
-Runtime: 48 compute hours total
+Runtime: 44 compute hours total
 
 We split this experiment in two batches to simplify result extraction for different complexities. 
 
 ```
 ./run_docker_full_lowt.sh
 ```
-
-- Threshold 2 to 5
-- Participants 7 to 128
-- Coordinates: 100
+Threshold up to 5, <2 hours
 
 ```
 ./run_docker_full_t7.sh
 ```
-
-- Threshold 7
-- Participants 7 to 128
-- Coordinates: 10
+Threshold 7, ~ 42 hours
 
 Results are aggregated per coordinate processed. Timing stability in both sets at 127 participants should be below 2%.
 Terminal output should report average, variance, and standard deviation, including percentage of the average run.
