@@ -51,7 +51,7 @@ It was tested on the same host, with Docker version 28.4.0.
 ### Estimated Time and Storage Consumption 
 
 Building the Docker image will require 10 minutes of compute time and 3 GB of disk space.
-Running the experiments with the default values will require roughly 48 hours of compute time 
+Running the experiments with the default values will require roughly 10 human-minutes, 48 hours of compute time 
 and less than 200MB of runtime memory.
 
 ## Environment 
@@ -67,6 +67,11 @@ git clone --recursive https://github.com/zoopr/dt_psi
 ```
 
 to properly initialize the imported submodules. The script `./build_docker.sh` should also be able to correct this if they are missing.
+
+If the shell scripts do not run, add execution permissions with:
+```
+chmod +x ./*.sh
+```
 
 ### Set up the environment 
 
@@ -157,7 +162,7 @@ Also note that in order to pass the correct environmental variables, `run_docker
 
 #### Experiment 1: Init
 
-Runtime: 2 compute minutes
+Runtime: 2 human-minutes + 2 compute minutes
 
 You can run Experiment 1 by running
 
@@ -170,7 +175,7 @@ We manually input these results onto a `tikz` image into LaTeX.
 
 #### Experiment 2: Enc/Dec
 
-Runtime: 10 compute minutes
+Runtime: 2 human-minutes + 10 compute minutes
 
 You can run Experiment 2 by running
 
@@ -187,7 +192,7 @@ They should run about 7x slower. Expected runtime is slightly over 1 hour.
 
 #### Experiment 3: Reconstruction
 
-Runtime: 44 compute hours total
+Runtime: 5 human-minutes + 44 compute hours total
 
 We split this experiment in two batches to simplify result extraction for different complexities. 
 
