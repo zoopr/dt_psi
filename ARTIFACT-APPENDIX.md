@@ -237,7 +237,7 @@ If in doubt, copy and paste the contents of the corresponding script.
 The corresponding pairs are
 
 - `PLOT_HELPER=1` for `./run_docker_init.sh` into `./figures/init_tikz.tex`
--  `PLOT_HELPER=2` for `./run_docker_encdec.sh` into `./figures/enc_tikz.tex`
+- `PLOT_HELPER=2` for `./run_docker_encdec.sh` into `./figures/enc_tikz.tex`
 - `PLOT_HELPER=3` for `./run_docker_encdec.sh` into `./figures/dec_tikz.tex`
 - `PLOT_HELPER=4` for `./run_docker_full_lowt.sh` and `./run_docker_full_t7.sh` into `./figures/rec_tikz.tex`
 
