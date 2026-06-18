@@ -137,6 +137,9 @@ We also provide a number of scripts for testing each element separately.
 These scripts all depend on the same docker image built by `build_docker.sh`. 
 Each experiment is given one or more scripts automatically passing the correct parameters to the test environment.
 
+Each test provides relevant measurements for mean, variance and standard deviation. These values should be manually inserted into the corresponding LaTeX templates in `figures/` in order to produce the figures in the final paper. We offer a runtime option to format this data automatically, but it is not default as it is poorly human-readable. More details on the process in [Limitations](#limitations).
+
+
 For custom parameters, run `run_docker_generic.sh` passing the desired ranges. 
 
 The full parameters list is the following:
@@ -208,8 +211,14 @@ We manually input these results onto a `tikz` image into LaTeX.
 
 ## Limitations 
 
-Generating the graphs still requires manual input into a `tikz` template. 
-We provide templates for each figure in the repository in the `figures/` folder.
+Generating the graphs still requires manual input into a `tikz` template. We provide templates for each figure in the repository in the `figures/` folder.
+
+More specifically, for each threshold value, we overlay a line denoting the mean and standard deviation of the computing time of each experiment.
+Each point in the line comes in the format:
+
+```
+(scaling parameter, mean) +- (0,std dev) % commented percentage of mean
+```
 
 We offer the `PLOT_HELPER` environmental variable to directly produce the test values in the proper formatting. In other words, this will package the mean and standard deviation of each experiment in a single line, already in the format required by the line graphs, with no additional text output.
 
@@ -217,6 +226,12 @@ This environmental variable can be set to values from 1 to 4, corresponding to `
 
 Note that this does not automatically adjust the experiment parameters. These should still be passed according to the tests. 
 If in doubt, copy and paste the contents of the corresponding script.
+The corresponding pairs are
+
+- `PLOT_HELPER=1` for `./run_docker_init.sh` into `./figures/init_tikz.tex`
+-  `PLOT_HELPER=2` for `./run_docker_encdec.sh` into `./figures/enc_tikz.tex`
+- `PLOT_HELPER=3` for `./run_docker_encdec.sh` into `./figures/dec_tikz.tex`
+- `PLOT_HELPER=4` for `./run_docker_full_lowt.sh` and `./run_docker_full_t7.sh` into `./figures/rec_tikz.tex`
 
 For instance, after adding `-e PLOT_HELPER=1` to the contents of `./run_docker_init.sh`:
 ```
