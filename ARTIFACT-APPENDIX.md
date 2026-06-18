@@ -170,7 +170,7 @@ You can run Experiment 1 by running
 ```
 
 Text output directly on terminal should report average, variance, and standard deviation, including percentage of the average run.
-For each threshold value, we are interested in the mean and standard deviation of each test (y-axis) over the number of participants (x-axis).
+For each threshold value, we are interested in the mean and standard deviation of each test (y-axis) over the number of participants (x-axis, `N` in the test header).
 
 We manually input these results in `figure/init_tikz.tex`. The reference figure is Figure 1. 
 
@@ -185,7 +185,7 @@ You can run Experiment 2 by running
 ```
 
 As before, terminal output should report average, variance, and standard deviation, including percentage of the average run.
-For each threshold value, we are interested in the mean and standard deviation of each test (y-axis) over the number of coordinates (x-axis).
+For each threshold value, we are interested in the mean and standard deviation of each test (y-axis) over the number of coordinates (x-axis, `L` in the test header).
 
 Figure 2a (left) represents "Row encryption", and Figure 2b (right) represents "Row decryption". Note that the values in the graphs are scaled to the millisecond. To generate them, we input the corresponding data in `figure/enc_tikz.tex` and `figure/dec_tikz.tex` respectively.
 
@@ -213,7 +213,7 @@ Results are aggregated per coordinate processed. Timing stability in both sets a
 This set may run for prolonged time without external feedback. To avoid this, the `DEBUG_REC` environmental variable is set inside `./run_docker_full_t7.sh`, printing each time a coordinate test is completed. Please note that each coordinate may still require several hours.
 
 Terminal output should report average, variance, and standard deviation, including percentage of the average run.
-For each threshold value, we are interested in the mean and standard deviation of each test (y-axis) over the number of participants (x-axis)
+For each threshold value, we are interested in the mean and standard deviation of each test (y-axis) over the number of participants (x-axis, `N` in the test header)
 
 We manually input these results in `figure/rec_tikz.tex`. The reference figure is Figure 3. 
 
