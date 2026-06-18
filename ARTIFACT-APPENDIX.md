@@ -144,7 +144,6 @@ Each experiment is given one or more scripts automatically passing the correct p
 
 Each test provides relevant measurements for mean, variance and standard deviation. These values should be manually inserted into the corresponding LaTeX templates in `figures/` in order to produce the figures in the final paper. We offer a runtime option to format this data automatically, but it is not default as it is poorly human-readable. More details on the process in [Limitations](#limitations).
 
-
 For custom parameters, run `run_docker_generic.sh` passing the desired ranges. 
 
 The full parameters list is the following:
@@ -171,7 +170,9 @@ You can run Experiment 1 by running
 ```
 
 Text output directly on terminal should report average, variance, and standard deviation, including percentage of the average run.
-We manually input these results onto a `tikz` image into LaTeX.
+For each threshold value, we are interested in the mean and standard deviation of each test (y-axis) over the number of participants (x-axis).
+
+We manually input these results in `figure/init_tikz.tex`. The reference figure is Figure 1. 
 
 #### Experiment 2: Enc/Dec
 
@@ -184,10 +185,11 @@ You can run Experiment 2 by running
 ```
 
 As before, terminal output should report average, variance, and standard deviation, including percentage of the average run.
-Note that this will also output zero-length Reconstruction data, which should be ignored.
-We manually input these results onto a `tikz` image into LaTeX. 
+For each threshold value, we are interested in the mean and standard deviation of each test (y-axis) over the number of coordinates (x-axis).
 
-To replicate the numbers in figure 2a, these tests should be run on the Raspberry Pi 400. 
+Figure 2a (left) represents "Row encryption", and Figure 2b (right) represents "Row decryption". Note that the values in the graphs are scaled to the millisecond. To generate them, we input the corresponding data in `figure/enc_tikz.tex` and `figure/dec_tikz.tex` respectively.
+
+To replicate the numbers in figure 2a (left), these tests should be run on the Raspberry Pi 400. 
 They should run about 7x slower. Expected runtime is slightly over 1 hour.
 
 #### Experiment 3: Reconstruction
@@ -211,8 +213,9 @@ Results are aggregated per coordinate processed. Timing stability in both sets a
 This set may run for prolonged time without external feedback. To avoid this, the `DEBUG_REC` environmental variable is set inside `./run_docker_full_t7.sh`, printing each time a coordinate test is completed. Please note that each coordinate may still require several hours.
 
 Terminal output should report average, variance, and standard deviation, including percentage of the average run.
-We manually input these results onto a `tikz` image into LaTeX. 
+For each threshold value, we are interested in the mean and standard deviation of each test (y-axis) over the number of participants (x-axis)
 
+We manually input these results in `figure/rec_tikz.tex`. The reference figure is Figure 3. 
 
 ## Limitations 
 
