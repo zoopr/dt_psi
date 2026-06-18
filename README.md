@@ -9,7 +9,7 @@ We recommend you build the Docker image with `./build_docker.sh` and run the con
 
 If scripts are not running, make sure to `chmod +x ./*.sh`.
 
-More details on the experiment structure and the rest of the scripts in `ARTIFACT_APPENDIX.md`.
+More details on the experiment structure and the rest of the scripts in `ARTIFACT-APPENDIX.md`.
 
 You can also compile from source directly.
 Technical requisites:
