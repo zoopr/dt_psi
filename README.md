@@ -7,6 +7,8 @@ Clone this image with `git clone --recursive [this repo url]` to pull the requir
 
 We recommend you build the Docker image with `./build_docker.sh` and run the container with `./run_all_tests.sh`.
 
+If scripts are not running, make sure to `chmod +x ./*.sh`.
+
 More details on the experiment structure and the rest of the scripts in `ARTIFACT_APPENDIX.md`.
 
 You can also compile from source directly.
