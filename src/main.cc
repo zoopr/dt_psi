@@ -99,14 +99,13 @@ void base_experiment(uint8_t num_participants, uint64_t coords_size, uint8_t max
     for (int round = 0; round < max_rounds; ++round){
         for (int i = 0; i < num_participants; ++i) {
             // partList[i].explore(coords_size/100); // We must test reconstruction without short circuits, the easiest way is full-dummy rows.
-            partList[i].send_round_shares(&r);
-            
+            partList[i].send_round_shares(&r);                    
         }
         // If we only want to test row encryption and decryption (shortcut 2), print stats for both here, then short circuit.
         // no need to do this for full tests (shortcut 0)
         if (shortcut == 2) {
             partList[0].print_stats();
-            r.print_stats(); // this will also print 0-length reconstruction. Not a big deal, but discard this information.
+            r.print_stats(); 
             return;
         }
 
@@ -200,12 +199,13 @@ int main(int argc, char *argv[]){
     base_experiment(3,100,1,2);
 
     for (uint8_t threshold = min_threshold; threshold <= max_threshold; threshold++) {
-        // std::cout <<"T="<< std::dec<<(int)threshold<< std::endl;
+        std::cout <<"T="<< std::dec<<(int)threshold<< std::endl;
         for (uint64_t coords_size = min_coords; coords_size <= max_coords; coords_size *= 4){
             for (int num_participants = min_participants; num_participants <= max_participants; num_participants = (num_participants+1) *2 - 1) // We want to be able to test up to 255 but for condition gets funky around uint8 limit. Easier like this.
             {
-                std::cout<<"# Starting experiment N,L,Rmax,T:"<<num_participants<<","<<coords_size<<","<<(int)max_rounds<<","<<(int)threshold<<std::endl;
-                // std::cout << "("<<num_participants+1<<",";
+                if (!std::getenv("PLOT_HELPER")){
+                    std::cout<<"# Starting experiment N,L,Rmax,T:"<<num_participants<<","<<coords_size<<","<<(int)max_rounds<<","<<(int)threshold<<std::endl;
+                }
                 base_experiment((uint8_t)num_participants, coords_size, max_rounds, threshold);
             }
         }

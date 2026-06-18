@@ -4,6 +4,8 @@
 #include <cstring>
 #include <iostream>
 #include <numeric>
+#include <cstdlib>
+#include <string>
 
 #include <openssl/rand.h>
 
@@ -97,7 +99,14 @@ bool KeyHolder::serve_reconstructor(reconstructor_proto_data_t *in)
 
 void KeyHolder::print_stats()
 {
-    CryptoPrimitives::print_stats(proto_init_timings, "Protocol initialization");
+    if (std::getenv("PLOT_HELPER")){
+        if (!std::strncmp(std::getenv("PLOT_HELPER"),"1",1)) {
+            auto pre = "("+std::to_string(max_parties+1)+",";
+            CryptoPrimitives::print_stats(proto_init_timings, pre);
+        } // Otherwise no-print
+    } else {
+        CryptoPrimitives::print_stats(proto_init_timings, "Protocol initialization");
+    }
 
     proto_init_timings.clear();
 }

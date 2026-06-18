@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cmath>
 #include <numeric>
+#include <cstdlib>
 
 #include <openssl/aead.h>
 #include <openssl/curve25519.h>
@@ -175,19 +176,24 @@ void CryptoPrimitives::print_stats(std::vector<std::chrono::duration<double>> ti
     Duration mean,var;
 
     if (timings.empty()) {
-        mean = Duration{0};
-        var = Duration{0};
+        // If you wish to support 0-length reconstructions for short circuits.
+        // mean = Duration{0};
+        // var = Duration{0};
+        return; // Not useful to print 0/0 stats. We might as well skip it.
     } else {
         Duration sum = std::reduce(timings.begin(), timings.end());
         mean = sum / timings.size();
         var = Duration{std::accumulate(timings.begin(), timings.end(), 0.0, [mean](double acc, const Duration& s){return acc + (std::pow((s-mean).count(),2));})}/ timings.size();
     }
 
-    std::cout << name << " average:" << mean.count() <<std::endl;
-    std::cout << name << " variance:" << var.count() <<std::endl;
-    std::cout << name << " std dev:" << std::sqrt(var.count()) << " ("<< 100*std::sqrt(var.count())/mean.count()  <<"%)"<<std::endl;
-    // std::cout << mean.count() << ") +- (0,"<< std::sqrt(var.count()) <<") % "<<100*std::sqrt(var.count())/mean.count()<<std::endl; // Latex plot helper
-    
+
+    if (std::getenv("PLOT_HELPER")){
+        std::cout << name << mean.count() << ") +- (0,"<< std::sqrt(var.count()) <<") % "<<100*std::sqrt(var.count())/mean.count()<<std::endl; // Latex plot helper
+    } else {
+        std::cout << name << " average:" << mean.count() <<std::endl;
+        std::cout << name << " variance:" << var.count() <<std::endl;
+        std::cout << name << " std dev:" << std::sqrt(var.count()) << " ("<< 100*std::sqrt(var.count())/mean.count()  <<"%)"<<std::endl;
+    }
 }
 
 CombinationGen::CombinationGen(uint64_t min, uint64_t max, size_t k)

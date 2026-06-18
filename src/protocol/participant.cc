@@ -4,6 +4,8 @@
 #include <cstring>
 #include <iostream>
 #include <numeric>
+#include <cstdlib>
+#include <string>
 
 
 #include "crypto/crypto_primitives.h"
@@ -140,7 +142,14 @@ void Participant::update_confirmed(std::set<uint64_t> last_PSI)
 
 void Participant::print_stats()
 {
-    CryptoPrimitives::print_stats(row_enc_timings, "Row encryption");
+    if (std::getenv("PLOT_HELPER")){
+        if (!std::strncmp(std::getenv("PLOT_HELPER"),"2",1)) {
+            auto pre = "("+std::to_string(params.coord_range)+",";
+            CryptoPrimitives::print_stats(row_enc_timings, pre);
+        } // Otherwise no-print (we're doing another graph.)
+    } else {
+        CryptoPrimitives::print_stats(row_enc_timings, "Row encryption");
+    }
 
     row_enc_timings.clear();
 }

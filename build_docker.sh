@@ -1,2 +1,3 @@
 #!/bin/bash
-sudo docker build -t dtpsi .
+git submodule update --init --recursive;
+sudo docker build -t dtpsi .;

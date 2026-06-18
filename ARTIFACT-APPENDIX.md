@@ -60,6 +60,14 @@ and less than 200MB of runtime memory.
 
 The artifact repository is available on GitHub at [https://github.com/zoopr/dt_psi](https://github.com/zoopr/dt_psi).
 
+Clone this repository with 
+
+```
+git clone --recursive https://github.com/zoopr/dt_psi
+```
+
+to properly initialize the imported submodules. The script `./build_docker.sh` should also be able to correct this if they are missing.
+
 ### Set up the environment 
 
 We provide the script `build_docker.sh` to automate the building process for the provided Docker image.

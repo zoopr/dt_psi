@@ -3,6 +3,8 @@
 #include <stdexcept>
 #include <iostream>
 #include <numeric>
+#include <cstdlib>
+#include <string>
 
 #include "crypto/crypto_primitives.h"
 #include "reconstructor.h"
@@ -151,8 +153,9 @@ void Reconstructor::reconstruct_round()
             }
         }    
         end = std::chrono::high_resolution_clock::now();
-
-        // std::cout << "Reconstruction complete. Duration: " << std::chrono::duration_cast<std::chrono::duration<double>>(end-start).count() <<"s "<<std::endl;
+        
+        if (std::getenv("DEBUG_REC"))
+        std::cout << "Coordinate "<<coord<<"/"<<params.coord_range<<" complete. Duration: " << std::chrono::duration_cast<std::chrono::duration<double>>(end-start).count() <<"s "<<std::endl;
         
         reconstruction_timings.push_back(std::chrono::duration_cast<std::chrono::duration<double>>(end-start));
     }
@@ -169,8 +172,18 @@ std::set<uint64_t> Reconstructor::get_psi()
 
 void Reconstructor::print_stats()
 {
-    CryptoPrimitives::print_stats(row_dec_timings, "Row decryption");
-    CryptoPrimitives::print_stats(reconstruction_timings, "Reconstruction");
+    if (std::getenv("PLOT_HELPER")){
+        if (!std::strncmp(std::getenv("PLOT_HELPER"),"3",1)) {
+            auto pre = "("+std::to_string(params.coord_range)+",";
+            CryptoPrimitives::print_stats(row_dec_timings, pre);
+        } else if (!std::strncmp(std::getenv("PLOT_HELPER"),"4",1)) {
+            auto pre = "("+std::to_string(params.max_parties+1)+",";
+            CryptoPrimitives::print_stats(reconstruction_timings, pre);
+        } // Otherwise no-print.
+    } else {        
+        CryptoPrimitives::print_stats(row_dec_timings, "Row decryption");
+        CryptoPrimitives::print_stats(reconstruction_timings, "Reconstruction");
+    }
 
     row_dec_timings.clear();
     reconstruction_timings.clear();
