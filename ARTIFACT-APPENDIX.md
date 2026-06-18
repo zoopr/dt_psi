@@ -172,7 +172,7 @@ You can run Experiment 1 by running
 Text output directly on terminal should report average, variance, and standard deviation, including percentage of the average run.
 For each threshold value, we are interested in the mean and standard deviation of each test (y-axis) over the number of participants (x-axis, `N` in the test header).
 
-We manually input these results in `figure/init_tikz.tex`. The reference figure is Figure 1. 
+We manually input these results in `figures/init_tikz.tex`. The reference figure is Figure 1. 
 
 #### Experiment 2: Enc/Dec
 
@@ -187,7 +187,7 @@ You can run Experiment 2 by running
 As before, terminal output should report average, variance, and standard deviation, including percentage of the average run.
 For each threshold value, we are interested in the mean and standard deviation of each test (y-axis) over the number of coordinates (x-axis, `L` in the test header).
 
-Figure 2a (left) represents "Row encryption", and Figure 2b (right) represents "Row decryption". Note that the values in the graphs are scaled to the millisecond. To generate them, we input the corresponding data in `figure/enc_tikz.tex` and `figure/dec_tikz.tex` respectively.
+Figure 2a (left) represents "Row encryption", and Figure 2b (right) represents "Row decryption". Note that the values in the graphs are scaled to the millisecond. To generate them, we input the corresponding data in `figures/enc_tikz.tex` and `figures/dec_tikz.tex` respectively.
 
 To replicate the numbers in figure 2a (left), these tests should be run on the Raspberry Pi 400. 
 They should run about 7x slower. Expected runtime is slightly over 1 hour.
@@ -215,7 +215,7 @@ This set may run for prolonged time without external feedback. To avoid this, th
 Terminal output should report average, variance, and standard deviation, including percentage of the average run.
 For each threshold value, we are interested in the mean and standard deviation of each test (y-axis) over the number of participants (x-axis, `N` in the test header)
 
-We manually input these results in `figure/rec_tikz.tex`. The reference figure is Figure 3. 
+We manually input these results in `figures/rec_tikz.tex`. The reference figure is Figure 3. 
 
 ## Limitations 
 
